@@ -20,6 +20,7 @@ from plot_results import *
 from utils_function import *
 from utils_mask import generate_float_mask, compute_exponential_weights
 from generation_training_dataset import generate_dataset_phase_1_saving
+from utils_training_1 import generate_random_week_indexes, generate_random_week_indexes_winter_weighted
 
 num_channel = number_channel  
 name_datetime_folder = str(datetime.datetime.utcnow())

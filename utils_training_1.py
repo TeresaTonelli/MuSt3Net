@@ -78,6 +78,34 @@ def prepare_paths_2(path_job, biogeoch_var, n_epochs_2, epoch_pretrain_2, lr_2):
     return path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, path_losses_2, path_model_2, path_plots_2
 
 
+
+def prepare_paths_2_ensemble(path_job, biogeoch_var, n_epochs_2, epoch_pretrain_2, lr_2, n_ensemble):
+    path_results_2 = path_job + "/results_training_2" 
+    path_configuration_2 = path_results_2 + "/" + str(biogeoch_var) + "/" + str(n_epochs_2 + epoch_pretrain_2) 
+    if not os.path.exists(path_configuration_2):
+        os.makedirs(path_configuration_2)
+    path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
+    if not os.path.exists(path_mean_std_2):
+        os.makedirs(path_mean_std_2)
+    path_lr_2 = path_configuration_2 + "/lrc_" + str(lr_2) 
+    if not os.path.exists(path_lr_2):
+        os.makedirs(path_lr_2)
+    for i in range(n_ensemble):
+        path_ensemble_model = path_lr_2 + "/lensemble_model_" + str(i)
+        if not os.path.exists(path_ensemble_model):
+            os.makedirs(path_ensemble_model)
+        path_losses_2 = path_ensemble_model + "/losses"
+        if not os.path.exists(path_losses_2):
+            os.makedirs(path_losses_2)
+        path_model_2 = path_ensemble_model + "/partial_models/"
+        if not os.path.exists(path_model_2):
+            os.mkdir(path_model_2)
+        path_plots_2 = path_ensemble_model + "/plots"
+        if not os.path.exists(path_plots_2):
+            os.makedirs(path_plots_2)
+    return path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, path_ensemble_model
+
+
 def generate_random_week_indexes(desired_sum, week_per_year):
     """it random samples week_per_year random number whose sum is exactly the m, numer of tensor that I want for a specific year"""
     # Step 1: Generate 52 random numbers
@@ -103,6 +131,17 @@ def generate_random_week_indexes(desired_sum, week_per_year):
                 if scaled_numbers[j] > 0:
                     scaled_numbers[j] -= 1
     return scaled_numbers
+
+
+def generate_random_week_indexes_winter_weighted(n, week_per_year, n_winter_data, n_winter_week):
+    winter_week_indexes = generate_random_week_indexes(n_winter_data, n_winter_week)
+    print("winter weeks indexes", winter_week_indexes)
+    n_summer_data = n - n_winter_data
+    n_summer_week = week_per_year - n_winter_week
+    summer_week_indexes = generate_random_week_indexes(n_summer_data, n_summer_week)
+    print("summer week idexes", summer_week_indexes)
+    total_week_indexes = np.concatenate([winter_week_indexes, summer_week_indexes])
+    return total_week_indexes
 
 
 def generate_random_duplicates_indexes(week_indexes, n_dupl_per_week):
@@ -196,7 +235,8 @@ def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dup
     years_week_dupl_indexes = []
     for year in years:
         #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
-        week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 52)
+        #week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 52)   #PER GLI INVERNALI HO COMMENTATO LUI, MA PRIMA USAVO QUESTO
+        week_indexes = generate_random_week_indexes_winter_weighted(desired_n_tensor_per_year, 52, int(desired_n_tensor_per_year / 3), 13)
         week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
         #for each week, sample k duplicates, where k is the element is the previous list refered to that week
         duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)

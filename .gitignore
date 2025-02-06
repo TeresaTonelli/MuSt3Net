@@ -14,3 +14,5 @@ dataset_training/
 results_job_*
 
 train_script.1*
+
+random_gen.*

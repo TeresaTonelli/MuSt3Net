@@ -5,7 +5,7 @@ from convolutional_network import CompletionN
 from denormalization import Denormalization
 from losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 from plot_error import Plot_Error
-from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases
+from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
 from utils_function import *
 from utils_generation_train_1p import write_list, read_list
 from utils_mask import generate_float_mask
@@ -14,7 +14,7 @@ from utils_training_1 import load_old_total_tensor
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device", device)
 
-def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_tensor, my_std_tensor,train_dataset, internal_test_dataset, index_training, index_internal_test, land_sea_masks, exp_weights, f, f_test, f_job_dev, losses_1p, train_losses_1p, test_losses_1p, model_save_path, path_model, path_losses):
+def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_tensor, my_std_tensor,train_dataset, internal_test_dataset, index_training, index_internal_test, land_sea_masks, exp_weights, f, f_test, f_job_dev, losses_1p, train_losses_1p, test_losses_1p, model_save_path, path_model, path_losses, path_lr, transposed_lat_coordinates):
     """this function describes the procedure of training 1p"""
     model_1p = CompletionN()
     #optimizer_1p =torch.optim.Adam(model_1p.parameters(), lr=l_r)
@@ -114,6 +114,23 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
                     print(f"[EPOCH]: {epoch + 1}, [TEST LOSS]: {loss_1c_test.item():.12f}")
                     f_test.write(f"[EPOCH]: {epoch + 1}, [LOSS]: {loss_1c_test.item():.12f} \n")
 
+                    #PARTE NUOVA PER VEDERE ALCUNI PROFILI PARZIALI
+                    year, week = years_week_dupl_indexes[index_internal_test[i_test]][0], years_week_dupl_indexes[index_internal_test[i_test]][1]
+                    print("year and week", [year, week])
+                    if week < 21 and year == 2019:  #così non salvo tutti tutti i profili
+                        path_partial_profiles = path_lr + "/partial_plots"
+                        if not os.path.exists(path_partial_profiles):
+                            os.makedirs(path_partial_profiles)
+                        path_partial_profiles_epoch = path_partial_profiles + "/epoch_" + str(epoch + 1)
+                        if not os.path.exists(path_partial_profiles_epoch):
+                            os.makedirs(path_partial_profiles_epoch)
+                        path_partial_profiles_1p = path_partial_profiles_epoch + "/partial_test_" + str(year) + "_week_" + str(week)
+                        if not os.path.exists(path_partial_profiles_1p):
+                            os.makedirs(path_partial_profiles_1p)
+                        plot_models_profiles_1p(torch.unsqueeze(biog_input[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), denormalized_testing_output, torch.unsqueeze(biog_input[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
+                                    "P_l", path_partial_profiles_1p, transposed_lat_coordinates[index_internal_test[i_test]]) 
+                        
+
                     del test_data
                     del denormalized_testing_output
                     del biog_input
@@ -154,6 +171,7 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
     path_profiles = path_plots + "/profiles_1p"
     path_NN_reconstruction = path_plots + "/NN_maps"
     path_BFM_reconstruction = path_plots + "/BFM_maps"
+    path_NN_mean_layer = path_plots + "/NN_maps_mean_layer"
     model_1p.to(device)
     model_1p.eval()
     print("start testing 1p", flush=True)
@@ -175,11 +193,15 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
             path_BFM_reconstruction_test_data = path_BFM_reconstruction + "/test_" + str(year) + "_week_" + str(week)
             if not os.path.exists(path_BFM_reconstruction_test_data):
                 os.makedirs(path_BFM_reconstruction_test_data)
+            path_NN_mean_layer_test_data = path_NN_mean_layer + "/test_" + str(year) + "_week_" + str(week)
+            if not os.path.exists(path_NN_mean_layer_test_data):
+                os.makedirs(path_NN_mean_layer_test_data)
             print("start plots", flush=True)
             plot_models_profiles_1p(torch.unsqueeze(denorm_testing_input[:, 6, :, :, :], 1), denorm_testing_output, torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
                                 var, path_profiles_test_data, transposed_lat_coordinates[index_external_testing[i]]) 
             plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
             plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", i, years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_reconstruction_test_data)
+            plot_NN_maps_layer_mean(denorm_testing_output, land_sea_masks, var, path_NN_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             #remove all the tensors from the gpu 
             del test_data
             del denorm_testing_input

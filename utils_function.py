@@ -194,15 +194,16 @@ def compute_indexes_from_depths(couple_layers, depth_resolution):
 def compute_mean_layers(my_tensor, my_list_layers, n_dim, my_size):
     """this function compyute the mean of the tensor wrt of specific layers"""
     my_tensor_mean_layers = torch.zeros(size=my_size)
-    for j in range(len(my_list_layers)):
-        ind_min, ind_max = compute_indexes_from_depths(my_list_layers[j], depth_resolution=resolution[2])
+    for j in range(len(my_list_layers)-1):
+        ind_min, ind_max = compute_indexes_from_depths([my_list_layers[j], my_list_layers[j+1]], depth_resolution=resolution[2])
+        print("ind min, ind max", [ind_min, ind_max])
         print("my size", my_size)
         dim_list = list(my_size)
         print("dim list", dim_list)
         dim_list.pop(n_dim)
         print("dim list", dim_list)
         dim_tuple = tuple(dim_list)
-        print("torch mean", torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim))
+        print("torch sum after mean", torch.sum(torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim)))
         my_tensor_mean_layers[:, :, j, :, :] = torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).unsqueeze(n_dim)
     return my_tensor_mean_layers
 
