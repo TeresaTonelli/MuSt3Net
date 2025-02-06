@@ -8,10 +8,10 @@
 #SBATCH --mem=256G  #200G
 #SBATCH --partition=boost_usr_prod
 
-#SBATCH --output=random_gen.%j
+#SBATCH --output=weights_computation.%j
 
 #SBATCH --account=OGS23_PRACE_IT_0
-#SBATCH --job-name=job_random
+#SBATCH --job-name=job_weights
 
 #SBATCH --cpus-per-task=1
 

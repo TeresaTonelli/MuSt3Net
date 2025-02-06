@@ -77,6 +77,7 @@ def compute_weights(d, total_depht, main_depth):
     for i in range(int(main_depth / resolution[2] + 1), int(total_depht / resolution[2] + 1)):
         weights[i] = 1 + ((-0.5) * (i - int(main_depth / resolution[2] + 1)) / ( int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)) ) 
     #weights = torch.unsqueeze(weights, 1)
+    print("linear weights", weights)
     weights_final = torch.zeros([1, 1, d, h, w])
     for i_h in range(h):
         for i_w in range(w):
@@ -90,7 +91,9 @@ def compute_exponential_weights(d, total_depht, main_depth):
     weights = torch.ones([d])
     y_B = 0.1
     for i in range(int(main_depth / resolution[2] + 1), int(total_depht / resolution[2] + 1)):
-        weights[i] = math.exp(-(math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))*i + (int(main_depth / resolution[2] + 1) * (math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))))   
+        #weights[i] = math.exp(-(math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))*i + (int(main_depth / resolution[2] + 1) * (math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))))   
+        weights[i] = math.exp((math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))*i - (int(main_depth / resolution[2] + 1) * (math.log(y_B) / (int(total_depht / resolution[2]) - int(main_depth / resolution[2] + 1)))))
+    print("exponential weights", weights)
     #weights = torch.unsqueeze(weights, 1)
     weights_final = torch.zeros([1, 1, d, h, w])
     for i_h in range(h):

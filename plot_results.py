@@ -15,6 +15,15 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device", device)
 
 
+def moving_average(data, window_size):
+    if window_size % 2 == 0:
+        window_size += 1  # Ensure window size is odd for symmetry
+    pad_size = window_size // 2
+    padded_data = np.pad(data, pad_size, mode='edge')
+    cumsum_vec = np.cumsum(np.insert(padded_data, 0, 0))
+    return (cumsum_vec[window_size:] - cumsum_vec[:-window_size]) / window_size
+
+
 def compute_channel(var):
    """this method returns the index of the channel in which this variable is saved inside the tensor"""
    if var in list_physics_vars:
@@ -50,7 +59,7 @@ def plot_NN_maps(NN_tensor, list_masks, var, path_fig_channel):
         cmap = plt.get_cmap("jet")   #trovata su internet, dovrebbe dìandare dai rossi ai blu
         newcmap = compute_cmap('jet')
         #plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=cmap, vmin = 0, vmax = torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.99, interpolation="linear"))
-        plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level])
+        plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
 
         plt.colorbar(shrink=0.6, pad=0.01)
         my_xticks= np.arange(0, h, 20)
@@ -107,7 +116,7 @@ def plot_difference_NN_phases(tensor_NN_1, tensor_NN_2, list_masks, var, path_fi
         plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
         cmap = plt.get_cmap("viridis")
         newcmap = compute_cmap('viridis')
-        plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin= parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level])
+        plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin= parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
                    #vmin=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.05, interpolation="linear"), 
                    #vmax=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.95, interpolation="linear"))
         plt.colorbar(shrink=0.6, pad=0.01)
@@ -129,17 +138,21 @@ def plot_models_profiles_1p(tensor_input_NN, tensor_output_NN_model, tensor_outp
     channel = compute_channel(var)
     depth_levels = resolution [2] * np.arange(tensor_input_NN.shape[2]-1, -1, -1)  #20, non resolution[2] prima
     for plot_coordinate in list_to_plot_coordinates:
-        profile_tensor_num_model = tensor_output_num_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]] 
-        profile_tensor_input_NN = tensor_input_NN[0, channel, :, plot_coordinate[0], plot_coordinate[1]] 
+        profile_tensor_num_model = tensor_output_num_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+        profile_tensor_input_NN = tensor_input_NN[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
         #print("num sum ", torch.sum(profile_tensor_num_model))
         #se lui è effettivamente un profilo, vado a generarmi anche quelle dei due modelli per le stesse coordinate
-        profile_tensor_NN_model = tensor_output_NN_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]] 
+        profile_tensor_NN_model = tensor_output_NN_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+        #addition of moving_average
+        profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
+        profile_tensor_input_NN = moving_average(profile_tensor_input_NN.detach().cpu().numpy(), 3)
+        profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
         #print("NN sum", torch.sum(profile_tensor_NN_model))
         path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
         plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
-        plt.plot(profile_tensor_input_NN.cpu(), depth_levels, color="red", label="input CNN profile")
-        plt.plot(profile_tensor_NN_model.cpu(), depth_levels, color="green", label="CNN profile")
-        plt.plot(profile_tensor_num_model.cpu(), depth_levels, color="blue", label="BFM profile")
+        plt.plot(profile_tensor_input_NN, depth_levels, color="red", label="input CNN profile")   #prima era profile_tensor_input_NN.cpu()
+        plt.plot(profile_tensor_NN_model, depth_levels, color="green", label="CNN profile")       #prima era profile_tensor_NN_model.cpu()
+        plt.plot(profile_tensor_num_model, depth_levels, color="blue", label="BFM profile")       #prima era profile_tensor_num_model.cpu()
         plt.grid(axis = 'y')
         plt.xlabel(var + " values")
         plt.ylabel("depths values")
@@ -191,8 +204,9 @@ def plot_NN_maps_layer_mean(NN_tensor, list_masks, var, path_fig_channel, list_l
     masked_NN_tensor = apply_masks(NN_tensor, list_masks)
     #compute the mean wrt layers and return the new tensor
     masked_NN_tensor_mean_layer = compute_mean_layers(masked_NN_tensor, list_layers, 2, (1, 1, len(list_layers), masked_NN_tensor.shape[3], masked_NN_tensor.shape[4]))   #prima erano 181 e 73 le ultime due shape
+    print("masked NN tensor mean layer", masked_NN_tensor_mean_layer.shape)
     #plot the resulted tensor
-    for layers_level in range(len(list_layers)):
+    for layers_level in range(len(list_layers) - 1):
         plot_tensor = torch.clone(masked_NN_tensor_mean_layer)   
         plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
         plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
@@ -200,7 +214,7 @@ def plot_NN_maps_layer_mean(NN_tensor, list_masks, var, path_fig_channel, list_l
         newcmap = compute_cmap('jet')
         depth_level = list_layers[layers_level] // resolution[2]
         print("depth level", depth_level)
-        plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level])    #vmin = 0, vmax = torch.quantile(plot_tensor[0, channel, layers_level, :, :], 0.99, interpolation="linear"))
+        plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')    #vmin = 0, vmax = torch.quantile(plot_tensor[0, channel, layers_level, :, :], 0.99, interpolation="linear"))
                    #vmin=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.01, interpolation="linear"), 
                    #vmax=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.99, interpolation="linear"))
         plt.colorbar(shrink=0.6, pad=0.01)
@@ -236,12 +250,18 @@ def comparison_profiles_1_2_phases(tensor_output_float, tensor_output_NN_model, 
                 #print("NN sum", torch.sum(profile_tensor_NN_model))
                 profile_tensor_num_model = tensor_output_num_model[0, channel, :, longitude_index, latitude_index] 
                 profile_tensor_NN_1_model = tensor_output_NN_1_model[0, channel, :, longitude_index, latitude_index]
+                #add moving average
+                profile_tensor_float = moving_average(profile_tensor_float.detach().cpu().numpy(), 3)
+                profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
+                profile_tensor_NN_1_model = moving_average(profile_tensor_NN_1_model.detach().cpu().numpy(), 3)
+                profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
+                #plots part
                 path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(latitude_index) + "_lon_" + str(longitude_index)
                 plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_output_float.shape[2]), fontsize=6)   
-                plt.plot(profile_tensor_float.cpu(), depth_levels, color="red", label="float profile")
-                plt.plot(profile_tensor_NN_model.cpu(), depth_levels, color="green", label="CNN profile")
-                plt.plot(profile_tensor_NN_1_model.cpu(), depth_levels, color="green", linestyle="dashed", label = "CNN profile first phase")
-                plt.plot(profile_tensor_num_model.cpu(), depth_levels, color="blue", label="BFM profile")
+                plt.plot(profile_tensor_float, depth_levels, color="red", label="float profile")            #prima c'era .cpu()
+                plt.plot(profile_tensor_NN_model, depth_levels, color="green", label="CNN profile")         #prima c'era .cpu()
+                plt.plot(profile_tensor_NN_1_model, depth_levels, color="green", linestyle="dashed", label = "CNN profile first phase")    #prima c'era .cpu()
+                plt.plot(profile_tensor_num_model, depth_levels, color="blue", label="BFM profile")         #prima c'era .cpu()
                 plt.grid(axis = 'y')
                 plt.xlabel(var + " values")
                 plt.ylabel("depths values")
@@ -322,13 +342,13 @@ def NN_differences_layer_mean_season(tensor_NN_1, tensor_NN_2, list_masks, var, 
     masked_tensor_NN_1_mean_layers = compute_mean_layers(masked_tensor_NN_1, list_layers, 2, (masked_tensor_NN_1.shape[0], masked_tensor_NN_1.shape[1], len(list_layers), masked_tensor_NN_1.shape[3], masked_tensor_NN_1.shape[4]))
     masked_tensor_NN_2_mean_layers = compute_mean_layers(masked_tensor_NN_2, list_layers, 2, (masked_tensor_NN_2.shape[0], masked_tensor_NN_2.shape[1], len(list_layers), masked_tensor_NN_2.shape[3], masked_tensor_NN_2.shape[4]))
     difference_tensor = masked_tensor_NN_2_mean_layers - masked_tensor_NN_1_mean_layers
-    for layers_level in range(len(list_layers)):
+    for layers_level in range(len(list_layers) - 1):
         plot_tensor = torch.clone(difference_tensor)   #difference_tensor.copy()
         plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
         plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
         cmap = plt.get_cmap("viridis")
         depth_level = list_layers[layers_level] // resolution[2]
-        plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=cmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level])
+        plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=cmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
         plt.colorbar(shrink=0.6, pad=0.01)
         my_xticks= np.arange(0, h, 20)
         my_yticks = np.arange(0, w, 20)
@@ -343,34 +363,38 @@ def NN_differences_layer_mean_season(tensor_NN_1, tensor_NN_2, list_masks, var, 
         plt.close()
 
 
-def NN_differences_layer_mean_season_physics(tensor_NN_1, list_masks, var, path_fig_channel, float_locations_coord, season):
+def NN_differences_layer_mean_season_physics(tensor_NN_1, list_masks, list_phys_var, path_fig_channel, float_locations_coord, season, temporal_coordinates):
     """plot the difference tensor between the output of the 1 and the 2 phase. In this way wwe hope tho see a difference in the ngh of float locations"""
-    channel = compute_channel(var)
-    print("channel", channel)
-    masked_tensor_NN_1 = apply_masks(tensor_NN_1, list_masks)
-    #compute the list layer wrt the season --> winter or summer
-    if season == "winter":
-        list_layers = [0, 100, 200, 300]
-    elif season == "summer":
-        list_layers = [0, 60, 160, 300]
-    #compute mean layers of both tensors
-    masked_tensor_NN_1_mean_layers = compute_mean_layers(masked_tensor_NN_1, list_layers, 2, (masked_tensor_NN_1.shape[0], masked_tensor_NN_1.shape[1], len(list_layers), masked_tensor_NN_1.shape[3], masked_tensor_NN_1.shape[4]))
-    for layers_level in range(len(list_layers)):
-        plot_tensor = torch.clone(masked_tensor_NN_1_mean_layers)   #difference_tensor.copy()
-        plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
-        plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
-        cmap = plt.get_cmap("viridis")
-        depth_level = list_layers[layers_level] // resolution[2]
-        plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=cmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level])
-        plt.colorbar(shrink=0.6, pad=0.01)
-        my_xticks= np.arange(0, h, 20)
-        my_yticks = np.arange(0, w, 20)
-        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 20)])
-        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -20)])   #prima era -1
-        plt.xticks(my_xticks, my_xticks_label, fontsize=6)
-        plt.yticks(my_yticks, my_yticks_label, fontsize=6)
-        plt.scatter(np.array([float_locations_coord[i][0] for i in range(len(float_locations_coord))]), np.array([(w- float_locations_coord[i][1]) for i in range(len(float_locations_coord))]), s=1, c="red")  
-        plt.xlabel("longitude")
-        plt.ylabel("latitude")
-        plt.savefig(path_fig_channel + "/physics_channel" + str(channel) + "depth_" + str(list_layers[layers_level]) + ".png")
-        plt.close()
+    for var in list_phys_var:
+        channel = compute_channel(var)
+        masked_tensor_NN_1 = apply_masks(tensor_NN_1, list_masks)
+        masked_tensor_NN_1 = masked_tensor_NN_1[:, channel, :, :, :].unsqueeze(1)
+        #compute the list layer wrt the season --> winter or summer
+        if season == "winter":
+            list_layers = [0, 100, 200, 300]
+        elif season == "summer":
+            list_layers = [0, 60, 160, 300]
+        #compute mean layers of both tensors
+        masked_tensor_NN_1_mean_layers = compute_mean_layers(masked_tensor_NN_1, list_layers, 2, (masked_tensor_NN_1.shape[0], masked_tensor_NN_1.shape[1], len(list_layers), masked_tensor_NN_1.shape[3], masked_tensor_NN_1.shape[4]))
+        for layers_level in range(len(list_layers) - 1):
+            plot_tensor = torch.clone(masked_tensor_NN_1_mean_layers)   #difference_tensor.copy()
+            plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
+            plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
+            cmap = plt.get_cmap("viridis")
+            depth_level = list_layers[layers_level] // resolution[2]
+            plt.imshow(plot_tensor[0, 0, layers_level, :, :], cmap=cmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
+            plt.colorbar(shrink=0.6, pad=0.01)
+            my_xticks= np.arange(0, h, 20)
+            my_yticks = np.arange(0, w, 20)
+            my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 20)])
+            my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -20)])   #prima era -1
+            plt.xticks(my_xticks, my_xticks_label, fontsize=6)
+            plt.yticks(my_yticks, my_yticks_label, fontsize=6)
+            #plt.scatter(np.array([float_locations_coord[i][0] for i in range(len(float_locations_coord))]), np.array([(w- float_locations_coord[i][1]) for i in range(len(float_locations_coord))]), s=1, c="red")  
+            plt.xlabel("longitude")
+            plt.ylabel("latitude")
+            path_physycs_saving = path_fig_channel + "/physics_channel_" + str(channel) + "/year_" +str(temporal_coordinates[0]) + "/week_" + str(temporal_coordinates[1])
+            if not os.path.exists(path_physycs_saving):
+                os.makedirs(path_physycs_saving)
+            plt.savefig(path_physycs_saving + "/depth_" + str(list_layers[layers_level]) + ".png")
+            plt.close()

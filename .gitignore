@@ -13,6 +13,9 @@ dataset_training/
 
 results_job_*
 
+test_final_plots.1*
+
 train_script.1*
+train_script_ensemble.1*
 
 random_gen.*

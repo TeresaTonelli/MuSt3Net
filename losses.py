@@ -71,6 +71,5 @@ def convolutional_network_float_exp_weighted_loss(input, output, list_masks, flo
     masked_weighted_input = masked_input[:, 6, :, :, :] * exp_weights.to(device)
     masked_weighted_output = masked_output * exp_weights.to(device)
     n = torch.count_nonzero(float_coordinates_mask[:, :, :-2, :, 1:-1])
-    print("n inside loss", n)
     return mse_loss(masked_weighted_output * float_coordinates_mask[:, :, :-2, :, 1:-1], masked_weighted_input * float_coordinates_mask[:, :, :-2, :, 1:-1], reduction='sum') / n 
     #float_coordinates_mask[:, :, :-2, :, 1:-1].to(device) (2 volte)

@@ -32,7 +32,9 @@ n_duplicates_biogeoch = 10
 deep_sea_good_count = 20   #30
 superficial_bound_depth = 200
 
-parameters_plots = {"P_l": [[0.0 for i in range(d)], [-0.0175*i + 0.5 for i in range(d)]], "O2o": [], "N3n": [], "POC": []}
+parameters_plots = {"P_l": [[0.0 for i in range(d)], [-0.0175*i + 0.5 for i in range(d)]], "O2o": [], "N3n": [], "POC": [], 
+                    "soshfldo":[[0.0 for i in range(d)], [200 for i in range(d)]], "sossheig":[[0.0 for i in range(d)], [2.0 for i in range(d)]], "vomecrty":[[0.0 for i in range(d)], [2.0 for i in range(d)]], 
+                    "vosaline":[[32.0 for i in range(d)], [40.0 for i in range(d)]], "votemper":[[0.0 for i in range(d)], [-(12/29)*i + 30.0 for i in range(d)]], "vozocrtx":[[0.0 for i in range(d)], [2.0 for i in range(d)]]}
 
 kindof = '-'
 

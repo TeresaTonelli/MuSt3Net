@@ -19,18 +19,18 @@ from get_dataset import *
 from plot_error import Plot_Error
 from plot_results import *
 from utils_function import *
-from utils_mask import generate_float_mask, compute_exponential_weights
+from utils_mask import generate_float_mask, compute_weights, compute_exponential_weights
 from generation_training_dataset import generate_dataset_phase_1_saving, generate_dataset_phase_2_saving
-from utils_training_1 import prepare_paths, reload_paths_1p, prepare_paths_2, generate_random_week_indexes, generate_random_duplicates_indexes, add_year_indexes, load_tensors, load_transp_lat_coordinates, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
+from utils_training_1 import prepare_paths, reload_paths_1p, prepare_paths_2, generate_random_week_indexes, generate_random_duplicates_indexes, add_year_indexes, load_tensors, load_transp_lat_coordinates, generate_training_dataset_1, generate_training_dataset_1_winter, generate_training_dataset_1_summer,split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
 from utils_generation_train_1p import write_list, read_list
 from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 1
+first_run_id = 0
 end_train_1p = 0
 end_1p = 0
-path_job = "results_job_2025-01-28 08:55:13.496992"
+path_job = ""
 
 
 num_channel = number_channel  
@@ -58,21 +58,15 @@ if first_run_id == 0:
     print("first run id = ", first_run_id, flush=True)
     n_dupl_per_week = len(os.listdir("dataset_training/total_dataset/P_l/2022/week_1/"))
     print("n dupl per week", n_dupl_per_week, flush=True)
-    total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1("dataset_training/total_dataset", "P_l", [2019, 2020, 2021, 2022], 1500, n_dupl_per_week)
+    #total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1_summer("dataset_training/total_dataset", "P_l", [2019, 2020, 2021, 2022], 400, n_dupl_per_week)
+    #total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1_winter("dataset_training/total_dataset", "P_l", [2019, 2020, 2021, 2022], 400, n_dupl_per_week)
+    total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1("dataset_training/total_dataset", "P_l", [2019, 2020, 2021, 2022], 400, n_dupl_per_week)
 
-    #print("len total dataset", len(total_dataset))
-    #print("len trasp lat coord", len(transposed_latitudes_coordinates))
     print("len y w d indexes", len(years_week_dupl_indexes), flush=True)
-    #print("1 data", total_dataset[0].shape)
-    #print("1 data", torch.count_nonzero(total_dataset[0]))
     print("check diversity tensors", torch.equal(total_dataset[0], total_dataset[100]), flush=True)
-    #print("1 indexes", years_week_dupl_indexes[0])
-    #print("1 transp lat", transposed_latitudes_coordinates[0])
     print("y w d indexes", years_week_dupl_indexes, flush=True)
 
     write_list(years_week_dupl_indexes, path_lr + "/ywd_indexes.txt")
-    #new_y_w_d_list = read_list(path_model + "/ywd_indexes.txt")
-    #print("new ywd list", new_y_w_d_list)
 
 
     #3a: normalize the dataset
@@ -115,13 +109,14 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 200 #400
+        n_epochs_1p = 100 #400
         snaperiod = 25  #25
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
         my_std_tensor = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
-        exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        #exp_weights = compute_weights(d, depth_interval[1], superficial_bound_depth)   #compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        exp_weights = torch.ones([1, 1, d-2, h, w-2])
         losses_1p = []
         train_losses_1p = []
         test_losses_1p = []
@@ -132,7 +127,7 @@ if end_1p == 0:
     elif end_train_1p == 1:
         #test 1 phase
         print("start testing phase", flush=True)
-        path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, "P_l", 400, 0, 0.001)
+        path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, "P_l", 200, 0, 0.001)
         years_week_dupl_indexes = read_list(path_lr + "/ywd_indexes.txt")
         index_external_testing = read_list(path_lr + "/index_external_testing.txt")
         print("index external testing inside test 1p section", index_external_testing, flush=True)
@@ -169,7 +164,8 @@ elif end_1p == 1:
     f_2, f_2_test = open(path_losses_2 + "/train_loss.txt", "w+"), open(path_losses_2 + "/test_loss.txt", "w+")
     my_mean_tensor_2p = torch.unsqueeze(torch.load(path_mean_std_2 + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
     my_std_tensor_2p = torch.unsqueeze(torch.load(path_mean_std_2 + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
-    exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+    #exp_weights = compute_weights(d, depth_interval[1], superficial_bound_depth)    #compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+    exp_weights = torch.ones([1, 1, d-2, h, w-2])
     losses_2p = []
     train_losses_2p = []
     test_losses_2p = []

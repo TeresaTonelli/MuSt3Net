@@ -101,7 +101,6 @@ def fill_tensor_with_standard(tensor, list_mask, standard_value):
                     for i_4 in range(tensor.shape[4]):
                         if tensor[i_0, i_1, i_2, i_3, i_4] == 0.0 and list_mask[i_2][i_0, i_1, 0, i_3, i_4] == 1.0:
                             tensor[i_0, i_1, i_2, i_3, i_4] = standard_value
-    print("end tensor fill")
     return tensor
 
 
@@ -196,14 +195,17 @@ def compute_mean_layers(my_tensor, my_list_layers, n_dim, my_size):
     my_tensor_mean_layers = torch.zeros(size=my_size)
     for j in range(len(my_list_layers)-1):
         ind_min, ind_max = compute_indexes_from_depths([my_list_layers[j], my_list_layers[j+1]], depth_resolution=resolution[2])
-        print("ind min, ind max", [ind_min, ind_max])
-        print("my size", my_size)
+        #print("ind min, ind max", [ind_min, ind_max])
+        #print("my size", my_size)
         dim_list = list(my_size)
-        print("dim list", dim_list)
+        #print("dim list", dim_list)
         dim_list.pop(n_dim)
-        print("dim list", dim_list)
+        #print("dim list", dim_list)
         dim_tuple = tuple(dim_list)
-        print("torch sum after mean", torch.sum(torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim)))
+        #print("torch sum after mean", torch.sum(torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim)), flush=True)
+        #print("shape mean tensor", torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).shape, flush=True)
+        #print("shape mean unsqueeze tensor", torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).unsqueeze(n_dim).shape, flush=True)
+        #print("shape tensor mean layers", my_tensor_mean_layers[:, :, j, :, :].shape, flush=True)
         my_tensor_mean_layers[:, :, j, :, :] = torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).unsqueeze(n_dim)
     return my_tensor_mean_layers
 
@@ -275,5 +277,13 @@ def sort_depths_old(list_depths):
         for depth_file in list_depths:
             if str(i) in depth_file:
                 sorted_list_depths.append(depth_file)
-    print("sorted list dephts", sorted_list_depths)
     return sorted_list_depths
+
+
+
+def compute_season(week):
+    """this function identifies if a data refers to summer or winter season"""
+    if week < 14:
+        return "winter"
+    else: 
+        return "summer"

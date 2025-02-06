@@ -22,15 +22,16 @@ from utils_function import *
 from utils_mask import generate_float_mask, compute_exponential_weights
 from generation_training_dataset import generate_dataset_phase_2_saving
 from utils_training_1 import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
+from utils_training_2 import compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
 from utils_generation_train_1p import write_list, read_list
-from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p
+from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p, testing_2p_ensemble
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 0
-end_train_1p = 0
-end_1p = 0
-path_job = ""
+first_run_id = 2
+end_train_1p = 1
+end_1p = 1
+path_job = "results_job_2025-01-30 11:34:44.708444"
 
 
 num_channel = number_channel  
@@ -121,7 +122,8 @@ if end_1p == 0:
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
         my_std_tensor = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
-        exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        #exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        exp_weights = torch.ones([1, 1, d-2, h, w-2])
         losses_1p = []
         train_losses_1p = []
         test_losses_1p = []
@@ -148,22 +150,23 @@ if end_1p == 0:
 
 elif end_1p == 1:
     #start 2 phase --> ensemble phase
-    n_ensemble = 4
+    n_ensemble = 10
     path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, 'P_l', 200, 0, 0.001)
     f_job_dev = open(path_job + "/file_job_dev.txt", "a")
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, path_ensemble_model = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001)
+    path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
 
     #preparation of general training 2 ingredients:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 20   #40
-    snaperiod_2p = 5
+    n_epochs_2p = 12   #40
+    snaperiod_2p = 4
     l_r_2p = 0.001
 
     for i_ens in range(n_ensemble):
         list_year_week_indexes, old_float_total_dataset, list_float_profiles_coordinates, sampled_list_float_profile_coordinates, index_training_2, index_internal_testing_2, index_external_testing_2, train_dataset_2, internal_test_dataset_2, test_dataset_2 = generate_dataset_phase_2_saving("P_l", path_results_2, [2019, 2020, 2021], "dataset_training/float", land_sea_masks)
-        print("list years weeks indexes", list_year_week_indexes, flush=True)
+        ##print("list years weeks indexes", list_year_week_indexes, flush=True)
         print("end data generation 2p", flush=True)
+        path_ensemble_model = paths_ensemble_models[i_ens]
         path_losses_2 = path_ensemble_model + "/losses"
         if not os.path.exists(path_losses_2):
             os.makedirs(path_losses_2)
@@ -177,15 +180,22 @@ elif end_1p == 1:
 
         #train 2 phase:
         print("starting training 2p preparation", flush=True)
-        f_2, f_2_test = open(path_losses_2 + "/train_loss.txt", "w+"), open(path_losses_2 + "/test_loss.txt", "w+")
+        f_2, f_2_test = open(path_losses_2 + "/train_losses_2p.txt", "w+"), open(path_losses_2 + "/test_losses_2p.txt", "w+")
         my_mean_tensor_2p = torch.unsqueeze(torch.load(path_mean_std_2 + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
         my_std_tensor_2p = torch.unsqueeze(torch.load(path_mean_std_2 + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
-        exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        #exp_weights = compute_exponential_weights(d, depth_interval[1], superficial_bound_depth)
+        exp_weights = torch.ones([1, 1, d-2, h, w-2])
         losses_2p = []
         train_losses_2p = []
         test_losses_2p = []
         model_2p_save_path = path_results_2
         training_2p(n_epochs_2p, snaperiod_2p, l_r_2p, my_mean_tensor_2p, my_std_tensor_2p, train_dataset_2, internal_test_dataset_2, index_training_2, index_internal_testing_2, land_sea_masks, exp_weights, old_float_total_dataset, sampled_list_float_profile_coordinates, f_2, f_2_test, losses_2p, train_losses_2p, test_losses_2p, path_results, model_2p_save_path, path_model_2, path_losses_2)
+        #copy the model checkpoint_2 inside the directory of the current ensemble model
+        source = path_results_2 + "/model_checkpoint_2.pth"
+        destination = path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth"
+        with open(source, 'rb') as src, open(destination, 'wb') as dst:
+            dst.write(src.read())
+        os.remove(source)
 
 
         #test 2 phase:
@@ -193,11 +203,71 @@ elif end_1p == 1:
         checkpoint = torch.load(path_results + '/model_checkpoint.pth')
         model_1p.load_state_dict(checkpoint['model_state_dict']) 
         model_2p = CompletionN()  
-        checkpoint_2 = torch.load(path_results_2 + '/model_checkpoint_2.pth')
+        checkpoint_2 = torch.load(path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth")    #path_results_2 + '/model_checkpoint_2.pth')
         model_2p.load_state_dict(checkpoint_2['model_state_dict']) 
-        print("list years week duplicates", list_year_week_indexes, flush = True)
+        ##print("list years week duplicates", list_year_week_indexes, flush = True)
         biogeoch_total_dataset = [torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", i_test_2, list_year_week_indexes)[:, -1, :, :, :], 1) for i_test_2 in index_external_testing_2]
         print("shape biogeoch tensors", biogeoch_total_dataset[2].shape)
         #ADD THE EVAL OF MODEL_1P
         model_1p.eval()
-        testing_2p("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, my_mean_tensor_2p, my_std_tensor_2p)
+        #testing_2p("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, my_mean_tensor_2p, my_std_tensor_2p)
+        testing_2p_ensemble("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2p, my_std_tensor_2p, exp_weights, path_losses_2)
+
+
+    #phase of evaluation of mean and standard deviation of ensemble models
+    checkpoint_list = [torch.load(paths_ensemble_models[i_ens] + '/model_checkpoint_2_ens_' + str(i_ens) + '.pth') for i_ens in range(n_ensemble)]
+    models_list = [CompletionN() for i in range(n_ensemble)]
+    #old_models_list = [models_list[i_ens].load_state_dict(checkpoint_list[i_ens]['model_state_dict']) for i_ens in range(n_ensemble)]
+    for i_m in range(len(models_list)):
+        model = models_list[i_m]
+        model.load_state_dict(checkpoint_list[i_m]['model_state_dict'])
+    #print("old models list", type(old_models_list[0]))
+    print("models list", type(models_list[0]))
+    
+    #1a approach: 
+    test_ensemble_mean = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
+    test_ensemble_std = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
+    print("test mean", test_ensemble_mean, flush=True)
+    print("test std", test_ensemble_std, flush=True)
+
+    #1b approach:
+    test_ensemble_mean_winter = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
+    test_ensemble_std_winter = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
+    print("test mean winter", test_ensemble_mean_winter, flush=True)
+    print("test std winter", test_ensemble_std_winter, flush=True)
+    test_ensemble_mean_summer = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
+    test_ensemble_std_summer = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
+    print("test mean summer", test_ensemble_mean_summer)
+    print("test std summer", test_ensemble_std_summer)
+
+    #2 approach:
+    test_data_winter = []
+    test_data_summer = []
+    #tensor_ensemble_mean, tensor_ensemble_std = compute_3D_ensemble_mean_std(test_dataset_2[0], models_list, path_mean_std_2)
+    path_ensemble_plots = path_lr_2 + "/plots_ensemble"
+    if not os.path.exists(path_ensemble_plots):
+        os.makedirs(path_ensemble_plots)
+    path_ensemble_plot_test = path_ensemble_plots + "/test_prova"
+    if not os.path.exists(path_ensemble_plot_test):
+        os.makedirs(path_ensemble_plot_test)
+    #path_ensemble_plot_test_mean = path_ensemble_plot_test + "/mean"
+    #if not os.path.exists(path_ensemble_plot_test_mean):
+     #   os.makedirs(path_ensemble_plot_test_mean)
+    #path_ensemble_plot_test_std = path_ensemble_plot_test + "/std"
+    #if not os.path.exists(path_ensemble_plot_test_std):
+     #   os.makedirs(path_ensemble_plot_test_std)
+    for i_test in range(len(test_dataset_2)):
+        path_ensemble_test_data = path_ensemble_plot_test + "test_data_year_" + str(list_year_week_indexes[index_external_testing_2[i_test]][0]) + "_week_" + str(list_year_week_indexes[index_external_testing_2[i_test]][1])
+        if not os.path.exists(path_ensemble_test_data):
+            os.makedirs(path_ensemble_test_data)
+        path_ensemble_plot_test_mean = path_ensemble_test_data + "/mean"
+        if not os.path.exists(path_ensemble_plot_test_mean):
+            os.makedirs(path_ensemble_plot_test_mean)
+        path_ensemble_plot_test_std = path_ensemble_test_data + "/std"
+        if not os.path.exists(path_ensemble_plot_test_std):
+            os.makedirs(path_ensemble_plot_test_std)
+        
+        tensor_ensemble_mean, tensor_ensemble_std = compute_3D_ensemble_mean_std(test_dataset_2[i_test], models_list, path_mean_std_2)
+        plot_NN_maps(tensor_ensemble_mean, land_sea_masks, "P_l", path_ensemble_plot_test_mean)
+        plot_NN_maps(tensor_ensemble_std, land_sea_masks, "P_l", path_ensemble_plot_test_std)
+    

@@ -80,7 +80,7 @@ def prepare_paths_2(path_job, biogeoch_var, n_epochs_2, epoch_pretrain_2, lr_2):
 
 
 def prepare_paths_2_ensemble(path_job, biogeoch_var, n_epochs_2, epoch_pretrain_2, lr_2, n_ensemble):
-    path_results_2 = path_job + "/results_training_2" 
+    path_results_2 = path_job + "/results_training_2_ensemble" 
     path_configuration_2 = path_results_2 + "/" + str(biogeoch_var) + "/" + str(n_epochs_2 + epoch_pretrain_2) 
     if not os.path.exists(path_configuration_2):
         os.makedirs(path_configuration_2)
@@ -90,20 +90,13 @@ def prepare_paths_2_ensemble(path_job, biogeoch_var, n_epochs_2, epoch_pretrain_
     path_lr_2 = path_configuration_2 + "/lrc_" + str(lr_2) 
     if not os.path.exists(path_lr_2):
         os.makedirs(path_lr_2)
+    paths_ensemble_models = []
     for i in range(n_ensemble):
-        path_ensemble_model = path_lr_2 + "/lensemble_model_" + str(i)
+        path_ensemble_model = path_lr_2 + "/ensemble_model_" + str(i)
         if not os.path.exists(path_ensemble_model):
             os.makedirs(path_ensemble_model)
-        path_losses_2 = path_ensemble_model + "/losses"
-        if not os.path.exists(path_losses_2):
-            os.makedirs(path_losses_2)
-        path_model_2 = path_ensemble_model + "/partial_models/"
-        if not os.path.exists(path_model_2):
-            os.mkdir(path_model_2)
-        path_plots_2 = path_ensemble_model + "/plots"
-        if not os.path.exists(path_plots_2):
-            os.makedirs(path_plots_2)
-    return path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, path_ensemble_model
+        paths_ensemble_models.append(path_ensemble_model)
+    return path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models
 
 
 def generate_random_week_indexes(desired_sum, week_per_year):
@@ -144,6 +137,16 @@ def generate_random_week_indexes_winter_weighted(n, week_per_year, n_winter_data
     return total_week_indexes
 
 
+def generate_random_week_indexes_winter_only(week_per_year, n_winter_data, n_winter_week):
+    """this function samples an high majority of winter weeks for the training data"""
+    winter_week_indexes = generate_random_week_indexes(n_winter_data, n_winter_week)
+    print("winter weeks indexes", winter_week_indexes)
+    n_summer_week = week_per_year - n_winter_week
+    summer_week_indexes = [1 for i in range(n_summer_week)]
+    total_week_indexes = np.concatenate([winter_week_indexes, summer_week_indexes])
+    return total_week_indexes
+
+
 def generate_random_duplicates_indexes(week_indexes, n_dupl_per_week):
     """this function samples k duplicates for each week, where k is the element of week list refered to that week"""
     total_dupl_indexes = []
@@ -170,13 +173,10 @@ def load_land_sea_masks(directory_land_sea_masks):
     """this function load the land_sea_masks tensors"""
     land_sea_masks = []
     list_masks = os.listdir(directory_land_sea_masks)
-    print("list masks", list_masks)
     list_masks = sort_depths(list_masks)
-    print("list masks sorted", list_masks)
     for file_mask in list_masks:
         land_sea_mask = torch.load(directory_land_sea_masks + file_mask, map_location=torch.device('cpu'))
         land_sea_masks.append(land_sea_mask)
-    print("type land sea mask", type(land_sea_masks[1]))
     return land_sea_masks
 
 
@@ -237,6 +237,7 @@ def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dup
         #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
         #week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 52)   #PER GLI INVERNALI HO COMMENTATO LUI, MA PRIMA USAVO QUESTO
         week_indexes = generate_random_week_indexes_winter_weighted(desired_n_tensor_per_year, 52, int(desired_n_tensor_per_year / 3), 13)
+        #week_indexes = generate_random_week_indexes_winter_only(52, int(9 * desired_n_tensor_per_year / 10), 13)
         week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
         #for each week, sample k duplicates, where k is the element is the previous list refered to that week
         duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
@@ -259,12 +260,69 @@ def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dup
     return total_dataset, transposed_latitudes_coordinates, years_week_dupl_indexes
 
 
+
+def generate_training_dataset_1_winter(tensors_directory, biogeoch_var, years, n, n_dupl_per_week):
+    """this function loads the tensor to generate the total dataset"""
+    desired_n_tensor_per_year= int(n/len(years))
+    total_dataset = []
+    transposed_latitudes_coordinates = []
+    years_week_dupl_indexes = []
+    for year in years:
+        #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
+        week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 13)  
+        week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
+        #for each week, sample k duplicates, where k is the element is the previous list refered to that week
+        duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
+        #build a unique list of week and duplicates indexes
+        week_dupl_indexes = [[i+1, duplicates_indexes[i][j]] for i in range(len(week_indexes)) for j in range(len(duplicates_indexes[i]))]
+        #now, load the tensor realtive to the sampled year, week and duplicate, and put inside total_dataset list
+        total_year_dataset = load_tensors(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
+        #now, load the transposed latitudes coordinates
+        transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
+        #now modifies the indexes relative to week and duplicates, adding the year
+        year_week_dupl_indexes = add_year_indexes(year, week_dupl_indexes)
+        total_dataset.extend(total_year_dataset)
+        transposed_latitudes_coordinates.extend(transposed_year_latitudes_coordinates)
+        years_week_dupl_indexes.extend(year_week_dupl_indexes)
+    return total_dataset, transposed_latitudes_coordinates, years_week_dupl_indexes
+
+
+def generate_training_dataset_1_summer(tensors_directory, biogeoch_var, years, n, n_dupl_per_week):
+    """this function loads the tensor to generate the total dataset"""
+    desired_n_tensor_per_year= int(n/len(years))
+    total_dataset = []
+    transposed_latitudes_coordinates = []
+    years_week_dupl_indexes = []
+    for year in years:
+        #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
+        week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 39)  
+        week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
+        #for each week, sample k duplicates, where k is the element is the previous list refered to that week
+        duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
+        #build a unique list of week and duplicates indexes
+        week_dupl_indexes = [[13+i+1, duplicates_indexes[i][j]] for i in range(len(week_indexes)) for j in range(len(duplicates_indexes[i]))]
+        print("week dupl indexes", week_dupl_indexes)
+        #now, load the tensor realtive to the sampled year, week and duplicate, and put inside total_dataset list
+        total_year_dataset = load_tensors(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
+        #now, load the transposed latitudes coordinates
+        transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
+        #now modifies the indexes relative to week and duplicates, adding the year
+        year_week_dupl_indexes = add_year_indexes(year, week_dupl_indexes)
+        total_dataset.extend(total_year_dataset)
+        transposed_latitudes_coordinates.extend(transposed_year_latitudes_coordinates)
+        years_week_dupl_indexes.extend(year_week_dupl_indexes)
+    return total_dataset, transposed_latitudes_coordinates, years_week_dupl_indexes
+
+
 def split_train_test_data(total_dataset, train_perc=0.8, int_test_perc=0.1, ext_test_perc=0.1):
     """"this function creates the train, internal_test and external_test dataset"""
     index_testing = random.sample(range(len(total_dataset)), int(len(total_dataset) * (ext_test_perc + int_test_perc)))  
     index_internal_testing = random.sample(index_testing, int(len(index_testing) / 2))
     index_external_testing = [i for i in index_testing if i not in index_internal_testing]
     index_training = [i for i in range(len(total_dataset)) if i not in index_testing]
+    print("index training before suffle", index_training)
+    random.shuffle(index_training)
+    print("index training after shuffle", index_training)
     test_dataset = [total_dataset[i] for i in index_external_testing] 
     internal_test_dataset = [total_dataset[i] for i in index_internal_testing]                       
     train_dataset = [total_dataset[i] for i in index_training]

@@ -312,7 +312,7 @@ def generate_dataset_phase_2_saving(biogeoch_var, path_results_2, years, path_sa
     for year in years:
         physics_train_dataset_2, list_physics_weeks_2 = get_list_model_tensor_year_weeks("physics_vars", year)
         biogeoch_float_train_dataset, float_list_weeks = get_list_float_tensor_year_weeks(biogeoch_var, year)
-        print("year", year)
+        #print("year", year)
         #re-order tensors and weeks
         physics_train_dataset_2, list_physics_weeks_2 = re_order_weeks(list_physics_weeks_2, physics_train_dataset_2)
         biogeoch_float_train_dataset, float_list_weeks = re_order_weeks(float_list_weeks, biogeoch_float_train_dataset)
@@ -328,16 +328,14 @@ def generate_dataset_phase_2_saving(biogeoch_var, path_results_2, years, path_sa
         list_physics_tensors.extend(physics_train_dataset_2)
         list_biog_float_tensors.extend(biogeoch_float_train_dataset)
         #update and extend the list of week indexes, adding the corresponding year
-        print("float list week", float_list_weeks, flush=True)
+        #print("float list week", float_list_weeks, flush=True)
         float_list_year_week = [[year] + [int(float_list_weeks[i])] for i in range(len(float_list_weeks))]
-        print("float list year weeks", float_list_year_week, flush=True)
+        #print("float list year weeks", float_list_year_week, flush=True)
         list_year_week_indexes.extend(float_list_year_week)
-    print("len physycs dataset", len(list_physics_tensors), flush=True)
-    print("len biogeoch dataset", len(list_biog_float_tensors), flush=True)
     #concatenation of physical and biogeochemical variables
     old_float_total_dataset = [concatenate_tensors(list_physics_tensors[i], list_biog_float_tensors[i][:, 0:1, :, :, :], axis=1) for i in range(len(list_physics_tensors))]
     old_float_total_dataset = [denorm_old_float_data[:, :, :-1, :, 1:-1] for denorm_old_float_data in old_float_total_dataset]
-    print("len old float total dataset", len(old_float_total_dataset))
+    #print("len old float total dataset", len(old_float_total_dataset))
     #find the coordinates of profiles of float, for each week 
     list_float_profiles_coordinates = [compute_profile_coordinates(float_tensor[:, 0:1, :, :, :]) for float_tensor in list_biog_float_tensors]
     #print("list float profiles coordinates", list_float_profiles_coordinates)

@@ -5,7 +5,7 @@ from convolutional_network import CompletionN
 from denormalization import Denormalization
 from losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 from plot_error import Plot_Error
-from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
+from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean, NN_differences_layer_mean_season
 from utils_function import *
 from utils_generation_train_1p import write_list, read_list
 from utils_mask import generate_float_mask
@@ -23,7 +23,7 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
     try:
         checkpoint = torch.load(model_save_path + "/" + 'model_checkpoint.pth', map_location=device)
         model_1p.load_state_dict(checkpoint['model_state_dict'])
-        optimizer_1p =torch.optim.Adam(model_1p.parameters(), lr=l_r)
+        optimizer_1p = torch.optim.Adam(model_1p.parameters(), lr=l_r)   #torch.optim.Adadelta(model_1p.parameters())   
         optimizer_1p.load_state_dict(checkpoint['optimizer_state_dict'])
         for state in optimizer_1p.state.values():
             for k, v in state.items():
@@ -31,7 +31,16 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
                     state[k] = v.to(device)
         start_epoch = checkpoint['epoch']
         loss_1p = checkpoint['loss']
-        #print("loss 1p", loss_1p.get_device(), flush=True)
+        print("loss 1p", loss_1p, flush=True)
+        #check of weights
+        mismatch = False
+        for (name1, param1), (name2, param2) in zip(checkpoint['model_state_dict'].items(), model_1p.state_dict().items()):
+            if not torch.equal(param1.cpu(), param2.cpu()):
+                print(f"Mismatch in parameter: {name1}")
+                mismatch = True
+        if not mismatch:
+            print("All model parameters match exactly!")
+        #otehr prints
         train_losses_1p = read_list(path_losses + "/train_losses_1p.txt")
         test_losses_1p = read_list(path_losses + "/test_losses_1p.txt")
         print(f"Resuming from epoch {start_epoch}")
@@ -41,7 +50,7 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
     except FileNotFoundError:
         print("No checkpoint found, starting fresh.")
         start_epoch = 0
-        optimizer_1p =torch.optim.Adam(model_1p.parameters(), lr=l_r)
+        optimizer_1p = torch.optim.Adam(model_1p.parameters(), lr=l_r) #torch.optim.Adadelta(model_1p.parameters(), lr=1.0)     torch.optim.Adam(model_1p.parameters(), lr=l_r)
 
     print("start epoch = ", start_epoch, flush = True)
 
@@ -52,6 +61,12 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
     num_epochs = n_epochs_1p
     for epoch in range(start_epoch, num_epochs):
         #training loop (with validation)
+        # Print the effective learning rate at each epoch
+        #for param_group in optimizer_1p.param_groups:
+         #   print(f"[EPOCH {epoch + 1}] Learning Rate: {param_group['lr']}")
+        #with open(path_lr + "/learning_rates.txt", "a") as lr_file:
+         #   for param_group in optimizer_1p.param_groups:
+          #      lr_file.write(f"{epoch + 1}, {param_group['lr']}\n")
         losses_1p = []
         for i in range(len(train_dataset)):
             training_x = train_dataset[i]
@@ -62,18 +77,10 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
 
             #load the corresponding tensor of old_total_dataset
             biog_input = load_old_total_tensor("dataset_training/old_total_dataset/", index_training[i], years_week_dupl_indexes)
-            #biog_input = old_total_dataset[int(index_training[i] / n_duplicates_biogeoch)].to(device)
             biog_input = biog_input.to(device)
             exp_weights = exp_weights.to(device)
-            #print("check devices", flush=True)
-            #print("biog input", biog_input[:, :, :-1, :, 1:-1].float().get_device(), flush=True)
-            #print("denormalized NN", denormalized_NN_output.float().get_device(), flush=True)
             land_sea_masks = [mask.to(device) for mask in land_sea_masks]
-            #print("land sea masks", land_sea_masks[2].get_device(), flush=True)
-            #print("exp weights", exp_weights.get_device(), flush=True)
             loss_1p = convolutional_network_exp_weighted_loss(biog_input[:, :, :-1, :, 1:-1].float(), denormalized_NN_output.float(), land_sea_masks, exp_weights)
-            #print("loss completion", loss_1p, flush=True)
-            #print("loss completion", loss_1p.get_device(), flush=True)
             losses_1p.append(loss_1p.item())
 
             print(f"[EPOCH]: {epoch + 1}, [LOSS]: {loss_1p.item():.12f}")
@@ -152,6 +159,7 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
             'optimizer_state_dict': optimizer_1p.state_dict(),
             'loss': loss_1p,
         }, model_save_path + '/' + 'model_checkpoint.pth')
+        print("loss 1p end epoch_" + str(epoch + 1), loss_1p, flush=True)
         #Save the list of train and test losses --> useful only to obtain a complete plot of the loss behavior at the end
         write_list(train_losses_1p, path_losses + "/train_losses_1p.txt")
         write_list(test_losses_1p, path_losses + "/test_losses_1p.txt")
@@ -200,7 +208,7 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
             plot_models_profiles_1p(torch.unsqueeze(denorm_testing_input[:, 6, :, :, :], 1), denorm_testing_output, torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
                                 var, path_profiles_test_data, transposed_lat_coordinates[index_external_testing[i]]) 
             plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
-            plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", i, years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_reconstruction_test_data)
+            plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_reconstruction_test_data)
             plot_NN_maps_layer_mean(denorm_testing_output, land_sea_masks, var, path_NN_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             #remove all the tensors from the gpu 
             del test_data
@@ -349,6 +357,7 @@ def testing_2p(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_tra
     path_profiles_with_NN_1 = path_plots_2 + "/profiles_2p_NN_1"
     path_NN_reconstruction = path_plots_2 + "/NN_maps"
     path_NN_phases_diff = path_plots_2 + "/NN_phases_diff"
+    path_NN_phases_diff_season = path_plots_2 + "/NN_phases_diff_season"
     model_2p.to(device)
     model_2p.eval()
     with torch.no_grad():
@@ -363,23 +372,105 @@ def testing_2p(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_tra
             norm_testing_output_1 = model_1p(testing_input_2.cpu().float()).to(device) 
             denorm_testing_output_1 = Denormalization(norm_testing_output_1, my_mean_tensor_2, my_std_tensor_2) 
 
-            path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/test_data_" + str(i) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_profiles_test_data_NN_1):
                 os.makedirs(path_profiles_test_data_NN_1)
-            path_NN_reconstruction_test_data = path_NN_reconstruction + "/test_data_" + str(i) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            path_NN_reconstruction_test_data = path_NN_reconstruction + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_reconstruction_test_data):
                 os.makedirs(path_NN_reconstruction_test_data)
-            path_NN_diff_test_data = path_NN_phases_diff + "/test_data_" + str(i) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            path_NN_diff_test_data = path_NN_phases_diff + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_diff_test_data):
                 os.makedirs(path_NN_diff_test_data)
+            path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            if not os.path.exists(path_NN_diff_season_test_data):
+                os.makedirs(path_NN_diff_season_test_data)
             
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
             plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  #float_locations_coord[index_testing_2[i]])
+            season = compute_season(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            NN_differences_layer_mean_season(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_season_test_data, list_float_profiles_coordinates[index_external_testing_2[i]], season)
 
             del test_data_2
             torch.cuda.empty_cache()
+            
+    #Remove the last tensors on gpu
+    del my_mean_tensor_2
+    del my_std_tensor_2
+    torch.cuda.empty_cache()
+    return None
+
+
+
+def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_train_dataset, old_float_total_dataset, model_1p, model_2p, external_test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2, my_std_tensor_2, exp_weights, path_losses_2p):
+    """this function describes the procedure of training 2p"""
+    path_profiles_with_NN_1 = path_plots_2 + "/profiles_2p_NN_1"
+    path_NN_reconstruction = path_plots_2 + "/NN_maps"
+    path_NN_phases_diff = path_plots_2 + "/NN_phases_diff"
+    path_NN_phases_diff_season = path_plots_2 + "/NN_phases_diff_season"
+    model_2p.to(device)
+    model_2p.eval()
+    test_loss_list = []
+    test_loss_list_winter = []
+    test_loss_list_summer = []
+    with torch.no_grad():
+        for i in range(len(external_test_dataset_2)):
+            print("new test data")
+            test_data_2 = external_test_dataset_2[i]
+            test_data_2 = test_data_2.to(device)
+            testing_input_2 = test_data_2 
+            testing_output_2 = model_2p(testing_input_2.float())
+
+            denorm_testing_output_2 = Denormalization(testing_output_2, my_mean_tensor_2, my_std_tensor_2)
+            norm_testing_output_1 = model_1p(testing_input_2.cpu().float()).to(device) 
+            denorm_testing_output_1 = Denormalization(norm_testing_output_1, my_mean_tensor_2, my_std_tensor_2)
+
+            #compute loss and save in 
+            float_tensor_input = old_float_total_dataset[index_external_testing_2[i]].to(device)
+            float_coord_mask = generate_float_mask(sampled_list_float_profile_coordinates[index_external_testing_2[i]]).to(device)
+            test_loss = convolutional_network_float_exp_weighted_loss(float_tensor_input.float(), denorm_testing_output_2.float(), land_sea_masks, float_coord_mask, exp_weights.to(device))
+            test_loss_list.append(test_loss)
+
+            #compute the week and write the loss into the file of the corresponding season
+            week = years_week_dupl_indexes[i][1]
+            if week < 14:
+                test_loss_list_winter.append(test_loss)
+            else:
+                test_loss_list_summer.append(test_loss)
+
+
+            path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            if not os.path.exists(path_profiles_test_data_NN_1):
+                os.makedirs(path_profiles_test_data_NN_1)
+            path_NN_reconstruction_test_data = path_NN_reconstruction + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            if not os.path.exists(path_NN_reconstruction_test_data):
+                os.makedirs(path_NN_reconstruction_test_data)
+            path_NN_diff_test_data = path_NN_phases_diff + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            if not os.path.exists(path_NN_diff_test_data):
+                os.makedirs(path_NN_diff_test_data)
+            path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            if not os.path.exists(path_NN_diff_season_test_data):
+                os.makedirs(path_NN_diff_season_test_data)
+            
+            comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
+                                biogeoch_var, path_profiles_test_data_NN_1)
+            plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
+            plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  #float_locations_coord[index_testing_2[i]])
+            season = compute_season(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            NN_differences_layer_mean_season(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_season_test_data, list_float_profiles_coordinates[index_external_testing_2[i]], season)
+
+            del test_data_2
+            torch.cuda.empty_cache()
+
+    #f_test_final, f_test_final_winter, f_test_final_summer = open(path_losses_2p + "/test_loss_final.txt", "w+"), open(path_losses_2p + "/test_loss_final_winter.txt", "w+"), open(path_losses_2p + "/test_loss_final_summer.txt", "w+") 
+    #f_test_final.write(f"{test_loss_list.item():.12f} \n")
+    #f_test_final_winter.write(f"{test_loss_list.item():.12f} \n")
+    #f_test_final_summer.write(f"{test_loss_list.item():.12f} \n")
+
+    write_list(test_loss_list, path_losses_2p + "/test_loss_final.txt")
+    write_list(test_loss_list_winter, path_losses_2p + "/test_loss_final_winter.txt")
+    write_list(test_loss_list_summer, path_losses_2p + "/test_loss_final_summer.txt")
             
     #Remove the last tensors on gpu
     del my_mean_tensor_2

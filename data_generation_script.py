@@ -18,7 +18,7 @@ from get_dataset import *
 from plot_error import Plot_Error
 from plot_results import *
 from utils_function import *
-from utils_mask import generate_float_mask, compute_exponential_weights
+from utils_mask import generate_float_mask, compute_weights, compute_exponential_weights
 from generation_training_dataset import generate_dataset_phase_1_saving
 from utils_training_1 import generate_random_week_indexes, generate_random_week_indexes_winter_weighted
 
@@ -51,11 +51,15 @@ biogeoch_var_to_predict = list_biogeoch_vars[0]
 
 
 #data generation for the 1 phase
-generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2019, "dataset_training")
-generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2020, "dataset_training")
-generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2021, "dataset_training")
-generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2022, "dataset_training")
+#generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2019, "dataset_training")
+#generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2020, "dataset_training")
+#generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2021, "dataset_training")
+#generate_dataset_phase_1_saving(biogeoch_var_to_predict, path_results, 2022, "dataset_training")
 
 
+compute_weights(d, depth_interval[1], 100)
+compute_weights(d, depth_interval[1], 200)
+compute_exponential_weights(d, depth_interval[1], 100)
+compute_exponential_weights(d, depth_interval[1], 200)
 
 #data generation for the 2 phase
