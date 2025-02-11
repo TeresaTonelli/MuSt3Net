@@ -287,3 +287,13 @@ def compute_season(week):
         return "winter"
     else: 
         return "summer"
+
+
+
+def transform_latitudes_longitudes(lat_long_indexes):
+    """this function transforms the latitudeds and longitudes indexes in the real values of latitude and longitude"""
+    lat_index = lat_long_indexes[0]
+    long_index = lat_long_indexes[1]
+    lat_value = (lat_index + 1) * resolution[2] / constant_latitude + latitude_interval[0]
+    long_value = (long_index + 1) * resolution[1] / constant_longitude + longitude_interval[0]
+    return [lat_value, long_value]

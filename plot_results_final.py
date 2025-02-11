@@ -9,6 +9,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 import os
 import itertools
 
+from convolutional_network import CompletionN
 from denormalization import Denormalization
 from hyperparameter import * 
 from utils_mask import apply_masks
@@ -97,6 +98,7 @@ def plot_NN_maps_final_2(input_tensor, CNN_model, path_job, list_masks, var, pat
     ensemble_chl_tensor = torch.ones(single_chl_tensor_shape)
     for i_ens in range(n_ensemble):
         CNN_checkpoint = torch.load(path_job + "/results_training_2_ensemble/" + var + "/20/lrc_0.001/ensemble_model_" + str(i_ens) + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth", map_location=device)
+        CNN_model = CompletionN()
         CNN_model.load_state_dict(CNN_checkpoint['model_state_dict'])  
         CNN_model = CNN_model.to(device)
         CNN_model.eval()
@@ -141,15 +143,15 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
         tensor_output_NN_model = CNN_model(tensor_input_NN.float())
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
         my_std_tensor = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
+        tensor_input_NN_model = Denormalization(tensor_input_NN[:, -1, :, :, :], my_mean_tensor, my_std_tensor)
         tensor_output_NN_model = Denormalization(tensor_output_NN_model, my_mean_tensor, my_std_tensor).to(device)
-        print("tensor out shape", tensor_output_NN_model.shape)
         depth_levels = resolution [2] * np.arange(tensor_input_NN.shape[2]-1, -1, -1)  #20, non resolution[2] prima
         channel = compute_channel(var)
         for plot_coordinate in list_to_plot_coordinates:
             print("plot coordinate", plot_coordinate)
             print("tensor num shape", tensor_output_num_model.shape)
             profile_tensor_num_model = tensor_output_num_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
-            profile_tensor_input_NN = tensor_input_NN[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+            profile_tensor_input_NN = tensor_input_NN_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
             profile_tensor_NN_model = tensor_output_NN_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
             #addition of moving_average
             profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
@@ -167,3 +169,48 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
             plt.legend(loc="upper left", prop={'size': 6})
             plt.savefig(path_fig_channel_coordinates + ".png")
             plt.close()
+
+
+
+def plot_models_profiles_2(tensor_input_NN, CNN_model, tensor_output_num_model, path_job, var, path_mean_std, path_fig_channel, list_to_plot_coordinates, n_ensemble):
+    my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
+    my_std_tensor = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
+    single_chl_tensor_shape = (n_ensemble, tensor_input_NN.shape[0], 1, tensor_input_NN.shape[2], tensor_input_NN.shape[3], tensor_input_NN.shape[4])
+    ensemble_chl_tensor = torch.ones(single_chl_tensor_shape)
+    for i_ens in range(n_ensemble):
+        CNN_checkpoint = torch.load(path_job + "/results_training_2_ensemble/" + var + "/20/lrc_0.001/ensemble_model_" + str(i_ens) + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth", map_location=device)
+        CNN_model = CompletionN()
+        CNN_model.load_state_dict(CNN_checkpoint['model_state_dict'])  
+        CNN_model = CNN_model.to(device)
+        CNN_model.eval()
+        with torch.no_grad():
+            tensor_output_NN_model = CNN_model(tensor_input_NN.float())
+            tensor_input_NN_model = Denormalization(tensor_input_NN[:, -1, :, :, :], my_mean_tensor, my_std_tensor)
+            tensor_output_NN_model = Denormalization(tensor_output_NN_model, my_mean_tensor, my_std_tensor).to(device)
+            ensemble_chl_tensor[i_ens, :, :, :, :, :] = tensor_output_NN_model
+    mean_chl_tensor = torch.mean(ensemble_chl_tensor, dim=0)
+    print("mean chl tensor shape", mean_chl_tensor.shape)
+    depth_levels = resolution [2] * np.arange(tensor_input_NN.shape[2]-1, -1, -1)  #20, non resolution[2] prima
+    channel = compute_channel(var)
+    for plot_coordinate in list_to_plot_coordinates:
+        print("plot coordinate", plot_coordinate)
+        print("tensor num shape", tensor_output_num_model.shape)
+        profile_tensor_num_model = tensor_output_num_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+        profile_tensor_input_NN = tensor_input_NN_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+        profile_tensor_NN_model = mean_chl_tensor[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
+        #addition of moving_average
+        profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
+        profile_tensor_input_NN = moving_average(profile_tensor_input_NN.detach().cpu().numpy(), 3)
+        profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
+        #plot profiles
+        path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
+        plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
+        plt.plot(profile_tensor_input_NN, depth_levels, color="red", label="input CNN profile")   #prima era profile_tensor_input_NN.cpu()
+        plt.plot(profile_tensor_NN_model, depth_levels, color="green", label="CNN profile")       #prima era profile_tensor_NN_model.cpu()
+        plt.plot(profile_tensor_num_model, depth_levels, color="blue", label="BFM profile")       #prima era profile_tensor_num_model.cpu()
+        plt.grid(axis = 'y')
+        plt.xlabel(var + " values")
+        plt.ylabel("depths values")
+        plt.legend(loc="upper left", prop={'size': 6})
+        plt.savefig(path_fig_channel_coordinates + ".png")
+        plt.close()

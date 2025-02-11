@@ -69,3 +69,23 @@ def read_list(file_dir):
         n_list = pickle.load(fp)
         return n_list
     
+
+
+def read_txt_file(file_dir):
+    with open(file_dir, 'r') as file:
+        lines = file.readlines()
+    print("lines", lines)
+    for i_l in range(len(lines)):
+        line = lines[i_l]
+        line_elements = line.split()
+        #print("list len", len(line_elements))
+        #print("elements of a sepcific line", [line_elements[i] for i in range(len(line_elements))])
+        #print("information data", line_elements[0])
+        information_data = line_elements[0]
+        line_info_data = information_data.split()
+        print("elemtns of info data", [line_info_data[i] for i in range(len(line_info_data))])
+        line_info_data = line_info_data[0].split(",")
+        print("len info data", len(line_info_data))
+        print("latitude", line_info_data[1])
+        print("longitude", line_info_data[2])
+    return None

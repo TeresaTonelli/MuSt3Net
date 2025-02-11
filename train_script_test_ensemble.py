@@ -189,13 +189,13 @@ elif end_1p == 1:
         train_losses_2p = []
         test_losses_2p = []
         model_2p_save_path = path_results_2
-        training_2p(n_epochs_2p, snaperiod_2p, l_r_2p, my_mean_tensor_2p, my_std_tensor_2p, train_dataset_2, internal_test_dataset_2, index_training_2, index_internal_testing_2, land_sea_masks, exp_weights, old_float_total_dataset, sampled_list_float_profile_coordinates, f_2, f_2_test, losses_2p, train_losses_2p, test_losses_2p, path_results, model_2p_save_path, path_model_2, path_losses_2)
+        ##training_2p(n_epochs_2p, snaperiod_2p, l_r_2p, my_mean_tensor_2p, my_std_tensor_2p, train_dataset_2, internal_test_dataset_2, index_training_2, index_internal_testing_2, land_sea_masks, exp_weights, old_float_total_dataset, sampled_list_float_profile_coordinates, f_2, f_2_test, losses_2p, train_losses_2p, test_losses_2p, path_results, model_2p_save_path, path_model_2, path_losses_2)
         #copy the model checkpoint_2 inside the directory of the current ensemble model
-        source = path_results_2 + "/model_checkpoint_2.pth"
-        destination = path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth"
-        with open(source, 'rb') as src, open(destination, 'wb') as dst:
-            dst.write(src.read())
-        os.remove(source)
+        ##source = path_results_2 + "/model_checkpoint_2.pth"
+        ##destination = path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth"
+        ##with open(source, 'rb') as src, open(destination, 'wb') as dst:
+          ##  dst.write(src.read())
+        ##os.remove(source)
 
 
         #test 2 phase:
@@ -207,11 +207,14 @@ elif end_1p == 1:
         model_2p.load_state_dict(checkpoint_2['model_state_dict']) 
         ##print("list years week duplicates", list_year_week_indexes, flush = True)
         biogeoch_total_dataset = [torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", i_test_2, list_year_week_indexes)[:, -1, :, :, :], 1) for i_test_2 in index_external_testing_2]
+        print("i tests 2", [i_test_2 for i_test_2 in index_external_testing_2])
+        print("len biogeoch total tensors", len(biogeoch_total_dataset))
+        print("len old float total dataset", len(old_float_total_dataset))
         print("shape biogeoch tensors", biogeoch_total_dataset[2].shape)
         #ADD THE EVAL OF MODEL_1P
         model_1p.eval()
         #testing_2p("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, my_mean_tensor_2p, my_std_tensor_2p)
-        testing_2p_ensemble("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2p, my_std_tensor_2p, exp_weights, path_losses_2)
+        ##testing_2p_ensemble("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2p, my_std_tensor_2p, exp_weights, path_losses_2)
 
 
     #phase of evaluation of mean and standard deviation of ensemble models
@@ -266,8 +269,23 @@ elif end_1p == 1:
         path_ensemble_plot_test_std = path_ensemble_test_data + "/std"
         if not os.path.exists(path_ensemble_plot_test_std):
             os.makedirs(path_ensemble_plot_test_std)
+        path_ensemble_profiles = path_ensemble_test_data + "/profiles"
+        if not os.path.exists(path_ensemble_profiles):
+            os.makedirs(path_ensemble_profiles)
         
         tensor_ensemble_mean, tensor_ensemble_std = compute_3D_ensemble_mean_std(test_dataset_2[i_test], models_list, path_mean_std_2)
         plot_NN_maps(tensor_ensemble_mean, land_sea_masks, "P_l", path_ensemble_plot_test_mean)
-        plot_NN_maps(tensor_ensemble_std, land_sea_masks, "P_l", path_ensemble_plot_test_std)
+        plot_NN_maps(tensor_ensemble_std / tensor_ensemble_mean * 100, land_sea_masks, "P_l", path_ensemble_plot_test_std)
+        #plot_NN_maps(tensor_ensemble_std, land_sea_masks, "P_l", path_ensemble_plot_test_std)
+
+        #plot also the mean profile of the whole ensemble
+        tensor_output_float = torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i_test]][:, 6, :, :, :], 1)
+        print("type ensemble mean", type(tensor_ensemble_mean))
+        print("tensor ensemble mean size", tensor_ensemble_mean.shape)
+        tensor_output_NN_model = tensor_ensemble_mean
+        tensor_output_num_model = biogeoch_total_dataset[index_external_testing_2[i_test]][:, :, :-1, :, 1:-1]
+        model_1p.eval()
+        tensor_output_NN_1_model = model_1p(test_dataset_2[i_test].to(device))
+        comparison_profiles_1_2_phases(tensor_output_float, tensor_output_NN_model, tensor_output_num_model, tensor_output_NN_1_model, "P_l", path_ensemble_profiles)
+
     
