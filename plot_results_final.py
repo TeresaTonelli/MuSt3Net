@@ -6,6 +6,7 @@ import torch
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
 #import seaborn as sns
+#from mpl_toolkits.basemap import Basemap
 import os
 import itertools
 
@@ -166,7 +167,7 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
             plt.grid(axis = 'y')
             plt.xlabel(var + " values")
             plt.ylabel("depths values")
-            plt.legend(loc="upper left", prop={'size': 6})
+            plt.legend(loc="lower right", prop={'size': 6})
             plt.savefig(path_fig_channel_coordinates + ".png")
             plt.close()
 
@@ -211,6 +212,6 @@ def plot_models_profiles_2(tensor_input_NN, CNN_model, tensor_output_num_model, 
         plt.grid(axis = 'y')
         plt.xlabel(var + " values")
         plt.ylabel("depths values")
-        plt.legend(loc="upper left", prop={'size': 6})
+        plt.legend(loc="lower right", prop={'size': 6})
         plt.savefig(path_fig_channel_coordinates + ".png")
         plt.close()

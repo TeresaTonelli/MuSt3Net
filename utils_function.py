@@ -297,3 +297,13 @@ def transform_latitudes_longitudes(lat_long_indexes):
     lat_value = (lat_index + 1) * resolution[2] / constant_latitude + latitude_interval[0]
     long_value = (long_index + 1) * resolution[1] / constant_longitude + longitude_interval[0]
     return [lat_value, long_value]
+
+
+def transform_latitude_index(lat_coord):
+    """this function takes the latitude coordinate and reconstruct the index associated wrt current resolution"""
+    return (lat_coord - latitude_interval[0]) * constant_latitude / resolution[2] - 1
+
+
+def transform_longitude_index(long_coord):
+    """this function takes the longitude coordinate and reconstruct the index associated wrt current resolution"""
+    return (long_coord - longitude_interval[0]) * constant_longitude / resolution[1] - 1

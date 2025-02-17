@@ -62,10 +62,35 @@ def plot_NN_maps(NN_tensor, list_masks, var, path_fig_channel):
         plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
 
         plt.colorbar(shrink=0.6, pad=0.01)
-        my_xticks= np.arange(0, h, 20)
-        my_yticks = np.arange(0, w, 20)
-        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 20)])
-        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -20)])   #prima era -1
+        my_xticks= np.arange(0, h, 30)
+        my_yticks = np.arange(0, w, 30)
+        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 30)])
+        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -30)])   #prima era -1
+        plt.xticks(my_xticks, my_xticks_label, fontsize=6)
+        plt.yticks(my_yticks, my_yticks_label, fontsize=6)
+        plt.xlabel("longitude")
+        plt.ylabel("latitude")
+        plt.savefig(path_fig_channel + "/depth_" + str(depth_level) + ".png")
+        plt.close()
+
+
+def plot_NN_maps_std_percentage(NN_tensor, list_masks, var, path_fig_channel):
+    """function that plot the tensor resulted from the NN"""
+    channel = compute_channel(var)
+    depth_levels = np.arange(0, NN_tensor.shape[2])
+    masked_NN_tensor = apply_masks(NN_tensor, list_masks)
+    for depth_level in depth_levels:
+        plot_tensor = torch.clone(masked_NN_tensor)   
+        plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
+        plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
+        cmap = plt.get_cmap("jet")   #trovata su internet, dovrebbe dìandare dai rossi ai blu
+        newcmap = compute_cmap('jet')
+        plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin=0, vmax=100, interpolation='none')  #prima era vmax=100
+        plt.colorbar(shrink=0.6, pad=0.01)
+        my_xticks= np.arange(0, h, 30)
+        my_yticks = np.arange(0, w, 30)
+        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 30)])
+        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -30)])   #prima era -1
         plt.xticks(my_xticks, my_xticks_label, fontsize=6)
         plt.yticks(my_yticks, my_yticks_label, fontsize=6)
         plt.xlabel("longitude")
@@ -90,10 +115,10 @@ def plot_difference_maps(tensor_input, tensor_output, list_masks, var, path_fig_
                    vmin=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.05, interpolation="linear"), 
                    vmax=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.95, interpolation="linear"))
         plt.colorbar(shrink=0.6, pad=0.01)
-        my_xticks= np.arange(0, h, 20)
-        my_yticks = np.arange(0, w, 20)
-        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 20)])
-        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -20)])   #prima era -1
+        my_xticks= np.arange(0, h, 30)
+        my_yticks = np.arange(0, w, 30)
+        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 30)])
+        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -30)])   #prima era -1
         plt.xticks(my_xticks, my_xticks_label, fontsize=6)
         plt.yticks(my_yticks, my_yticks_label, fontsize=6)
         plt.xlabel("longitude")
@@ -120,10 +145,10 @@ def plot_difference_NN_phases(tensor_NN_1, tensor_NN_2, list_masks, var, path_fi
                    #vmin=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.05, interpolation="linear"), 
                    #vmax=torch.quantile(plot_tensor[0, channel, depth_level, :, :], 0.95, interpolation="linear"))
         plt.colorbar(shrink=0.6, pad=0.01)
-        my_xticks= np.arange(0, h, 20)
-        my_yticks = np.arange(0, w, 20)
-        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 20)])
-        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -20)])   #prima era -1
+        my_xticks= np.arange(0, h, 30)
+        my_yticks = np.arange(0, w, 30)
+        my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 30)])
+        my_yticks_label = np.array([int((index - 1) * resolution[0] / constant_latitude + 1 + latitude_interval[0]) for index in np.arange(w-1, -1, -30)])   #prima era -1
         plt.xticks(my_xticks, my_xticks_label, fontsize=6)
         plt.yticks(my_yticks, my_yticks_label, fontsize=6)
         plt.scatter(np.array([float_locations_coord[i][0] for i in range(len(float_locations_coord))]), np.array([(w- float_locations_coord[i][1]) for i in range(len(float_locations_coord))]), s=1, c="red")  #controllare che longitudine e latitudien siano messe correttamente negli assi, e non invertite
@@ -156,8 +181,8 @@ def plot_models_profiles_1p(tensor_input_NN, tensor_output_NN_model, tensor_outp
         plt.grid(axis = 'y')
         plt.xlabel(var + " values")
         plt.ylabel("depths values")
-        plt.title("profiles of " +  var + " distribution")
-        plt.legend(loc="upper left", prop={'size': 6})
+        #plt.title("profiles of " +  var + " distribution")
+        plt.legend(loc="lower right", prop={'size': 6})
         plt.savefig(path_fig_channel_coordinates + ".png")
         plt.close()
 
@@ -190,7 +215,7 @@ def plot_models_profiles(tensor_output_float, tensor_output_NN_model, tensor_out
                 plt.grid(axis = 'y')
                 plt.xlabel(var + " values")
                 plt.ylabel("depths values")
-                plt.title("profiles of " +  var + " distribution")
+                #plt.title("profiles of " +  var + " distribution")
                 plt.legend(loc="upper left", prop={'size': 6})
                 plt.savefig(path_fig_channel_coordinates + ".png")
                 plt.close()
@@ -265,8 +290,8 @@ def comparison_profiles_1_2_phases(tensor_output_float, tensor_output_NN_model, 
                 plt.grid(axis = 'y')
                 plt.xlabel(var + " values")
                 plt.ylabel("depths values")
-                plt.title("profiles of " +  var + " distribution")
-                plt.legend(loc="upper left", prop={'size': 6})
+                #plt.title("profiles of " +  var + " distribution")
+                plt.legend(loc="lower right", prop={'size': 6})
                 plt.savefig(path_fig_channel_coordinates + ".png")
                 plt.close()
 

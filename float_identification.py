@@ -58,7 +58,6 @@ def search_unseen_float(file_dir, list_float_devices, list_seen_years):
         float_devices_line_indexes = select_float_measures(file_dir, float_device)
         for line_index in float_devices_line_indexes:
             time = lines[line_index].split()[0].split(",")[3]
-            print("time", time)
             year, month, day = transform_float_data(time)
             if int(year) not in list_seen_years and int(year) <= list_seen_years[0]:
                 break

@@ -250,9 +250,9 @@ elif end_1p == 1:
     path_ensemble_plots = path_lr_2 + "/plots_ensemble"
     if not os.path.exists(path_ensemble_plots):
         os.makedirs(path_ensemble_plots)
-    path_ensemble_plot_test = path_ensemble_plots + "/test_prova"
-    if not os.path.exists(path_ensemble_plot_test):
-        os.makedirs(path_ensemble_plot_test)
+    #path_ensemble_plot_test = path_ensemble_plots + "/test_prova"
+    #if not os.path.exists(path_ensemble_plot_test):
+     #   os.makedirs(path_ensemble_plot_test)
     #path_ensemble_plot_test_mean = path_ensemble_plot_test + "/mean"
     #if not os.path.exists(path_ensemble_plot_test_mean):
      #   os.makedirs(path_ensemble_plot_test_mean)
@@ -260,7 +260,7 @@ elif end_1p == 1:
     #if not os.path.exists(path_ensemble_plot_test_std):
      #   os.makedirs(path_ensemble_plot_test_std)
     for i_test in range(len(test_dataset_2)):
-        path_ensemble_test_data = path_ensemble_plot_test + "test_data_year_" + str(list_year_week_indexes[index_external_testing_2[i_test]][0]) + "_week_" + str(list_year_week_indexes[index_external_testing_2[i_test]][1])
+        path_ensemble_test_data = path_ensemble_plots + "/test_data_year_" + str(list_year_week_indexes[index_external_testing_2[i_test]][0]) + "_week_" + str(list_year_week_indexes[index_external_testing_2[i_test]][1])
         if not os.path.exists(path_ensemble_test_data):
             os.makedirs(path_ensemble_test_data)
         path_ensemble_plot_test_mean = path_ensemble_test_data + "/mean"
@@ -275,7 +275,7 @@ elif end_1p == 1:
         
         tensor_ensemble_mean, tensor_ensemble_std = compute_3D_ensemble_mean_std(test_dataset_2[i_test], models_list, path_mean_std_2)
         plot_NN_maps(tensor_ensemble_mean, land_sea_masks, "P_l", path_ensemble_plot_test_mean)
-        plot_NN_maps(tensor_ensemble_std / tensor_ensemble_mean * 100, land_sea_masks, "P_l", path_ensemble_plot_test_std)
+        plot_NN_maps_std_percentage(tensor_ensemble_std / tensor_ensemble_mean * 100, land_sea_masks, "P_l", path_ensemble_plot_test_std)
         #plot_NN_maps(tensor_ensemble_std, land_sea_masks, "P_l", path_ensemble_plot_test_std)
 
         #plot also the mean profile of the whole ensemble
@@ -283,9 +283,13 @@ elif end_1p == 1:
         print("type ensemble mean", type(tensor_ensemble_mean))
         print("tensor ensemble mean size", tensor_ensemble_mean.shape)
         tensor_output_NN_model = tensor_ensemble_mean
-        tensor_output_num_model = biogeoch_total_dataset[index_external_testing_2[i_test]][:, :, :-1, :, 1:-1]
+        print("i test", i_test)
+        print("index testing i test", index_external_testing_2[i_test])
+        tensor_output_num_model = biogeoch_total_dataset[i_test][:, :, :-1, :, 1:-1]
+        model_1p.to(device)
         model_1p.eval()
         tensor_output_NN_1_model = model_1p(test_dataset_2[i_test].to(device))
+        tensor_output_NN_1_model = Denormalization(tensor_output_NN_1_model, my_mean_tensor_2p, my_std_tensor_2p)
         comparison_profiles_1_2_phases(tensor_output_float, tensor_output_NN_model, tensor_output_num_model, tensor_output_NN_1_model, "P_l", path_ensemble_profiles)
 
     

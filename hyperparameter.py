@@ -36,6 +36,15 @@ parameters_plots = {"P_l": [[0.0 for i in range(d)], [-0.0175*i + 0.5 for i in r
                     "soshfldo":[[0.0 for i in range(d)], [200 for i in range(d)]], "sossheig":[[0.0 for i in range(d)], [2.0 for i in range(d)]], "vomecrty":[[0.0 for i in range(d)], [2.0 for i in range(d)]], 
                     "vosaline":[[32.0 for i in range(d)], [40.0 for i in range(d)]], "votemper":[[0.0 for i in range(d)], [-(12/29)*i + 30.0 for i in range(d)]], "vozocrtx":[[0.0 for i in range(d)], [2.0 for i in range(d)]]}
 
+dict_season = {"winter":[1, 13], "summer":[14, 53]}
+dict_ga = {
+    'NWM': [[-2, 9.5], [40, 45]],
+    'SWM': [[-2, 9.5], [32, 40]],
+    'TYR': [[9.5, 16], [37, 45]],
+    'ION': [[9.5, 22], [37, 45]],
+    'LEV': [[22, 36], [30, 37]]
+}
+
 kindof = '-'
 
 

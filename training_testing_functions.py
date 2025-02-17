@@ -166,7 +166,8 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
 
     print("len train_losses_1p end train", len(train_losses_1p))
     print("len test_losses_1p end train", len(test_losses_1p))
-    Plot_Error(train_losses_1p, n_epochs_1p, 1, "1p_train", path_losses + "/")
+    #Plot_Error(train_losses_1p, n_epochs_1p, int(n_epochs_1p / 10), "1p_train", path_losses + "/")
+    Plot_Error([train_losses_1p[i] for i in range(len(train_losses_1p)) if (i+1)%10 == 0], n_epochs_1p, int(n_epochs_1p / 10), "1p_train", path_losses + "/")
     Plot_Error(test_losses_1p, n_epochs_1p, snaperiod, "1p", path_losses + "/")
 
     return None
