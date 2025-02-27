@@ -181,6 +181,7 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
     path_NN_reconstruction = path_plots + "/NN_maps"
     path_BFM_reconstruction = path_plots + "/BFM_maps"
     path_NN_mean_layer = path_plots + "/NN_maps_mean_layer"
+    path_BFM_mean_layer = path_plots + "/BFM_maps_mean_layer"
     model_1p.to(device)
     model_1p.eval()
     print("start testing 1p", flush=True)
@@ -205,12 +206,16 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
             path_NN_mean_layer_test_data = path_NN_mean_layer + "/test_" + str(year) + "_week_" + str(week)
             if not os.path.exists(path_NN_mean_layer_test_data):
                 os.makedirs(path_NN_mean_layer_test_data)
+            path_BFM_mean_layer_test_data = path_BFM_mean_layer + "/test_" + str(year) + "_week_" + str(week)
+            if not os.path.exists(path_BFM_mean_layer_test_data):
+                os.makedirs(path_BFM_mean_layer_test_data)
             print("start plots", flush=True)
             plot_models_profiles_1p(torch.unsqueeze(denorm_testing_input[:, 6, :, :, :], 1), denorm_testing_output, torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
                                 var, path_profiles_test_data, transposed_lat_coordinates[index_external_testing[i]]) 
             plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
             plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_reconstruction_test_data)
             plot_NN_maps_layer_mean(denorm_testing_output, land_sea_masks, var, path_NN_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
+            plot_NN_maps_layer_mean(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             #remove all the tensors from the gpu 
             del test_data
             del denorm_testing_input
@@ -363,15 +368,22 @@ def testing_2p(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_tra
     model_2p.eval()
     with torch.no_grad():
         for i in range(len(external_test_dataset_2)):
-            print("new test data")
+            print("new test data week", years_week_dupl_indexes[index_external_testing_2[i]])
             test_data_2 = external_test_dataset_2[i]
             test_data_2 = test_data_2.to(device)
             testing_input_2 = test_data_2 
             testing_output_2 = model_2p(testing_input_2.float())
 
             denorm_testing_output_2 = Denormalization(testing_output_2, my_mean_tensor_2, my_std_tensor_2)
+            exp_weights = torch.ones([1, 1, d-2, h, w-2])
+            float_tensor_input = old_float_total_dataset[index_external_testing_2[i]].to(device)
+            float_coord_mask = generate_float_mask(compute_profile_coordinates(float_tensor_input[:, 0:1, :, :, :])).to(device)
+            l2 = convolutional_network_float_exp_weighted_loss(float_tensor_input.float(), denorm_testing_output_2.float(), land_sea_masks, float_coord_mask, exp_weights.to(device))
+            print("l2", l2, flush=True)
             norm_testing_output_1 = model_1p(testing_input_2.cpu().float()).to(device) 
             denorm_testing_output_1 = Denormalization(norm_testing_output_1, my_mean_tensor_2, my_std_tensor_2) 
+            l1 = convolutional_network_float_exp_weighted_loss(float_tensor_input.float(), biogeoch_train_dataset[i][:, :, :-1, :, 1:-1].to(device).float(), land_sea_masks, float_coord_mask, exp_weights.to(device))
+            print("l1", l1, flush=True)
 
             path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_profiles_test_data_NN_1):
@@ -447,9 +459,9 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
             path_NN_reconstruction_test_data = path_NN_reconstruction + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_reconstruction_test_data):
                 os.makedirs(path_NN_reconstruction_test_data)
-            path_NN_diff_test_data = path_NN_phases_diff + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
-            if not os.path.exists(path_NN_diff_test_data):
-                os.makedirs(path_NN_diff_test_data)
+            #path_NN_diff_test_data = path_NN_phases_diff + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            #if not os.path.exists(path_NN_diff_test_data):
+            #    os.makedirs(path_NN_diff_test_data)
             path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_diff_season_test_data):
                 os.makedirs(path_NN_diff_season_test_data)
@@ -457,7 +469,7 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
-            plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  #float_locations_coord[index_testing_2[i]])
+            #plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  #float_locations_coord[index_testing_2[i]])
             season = compute_season(years_week_dupl_indexes[index_external_testing_2[i]][1])
             NN_differences_layer_mean_season(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_season_test_data, list_float_profiles_coordinates[index_external_testing_2[i]], season)
 

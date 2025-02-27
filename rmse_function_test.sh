@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:01:59
+#SBATCH --time=00:44:29
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

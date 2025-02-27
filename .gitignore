@@ -23,3 +23,6 @@ train_script_ensemble.1*
 random_gen.*
 
 rmse_computation.1*
+
+#images
+*.png

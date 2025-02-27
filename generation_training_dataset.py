@@ -345,8 +345,8 @@ def generate_dataset_phase_2_saving(biogeoch_var, path_results_2, years, path_sa
     #print("sampled list profile coordinates", sampled_list_float_profile_coordinates)
     #remove the float elements that we use as testing ones
     reduced_biogeoch_float_total_dataset = [remove_float(list_biog_float_tensors[j], sampled_list_float_profile_coordinates[j]) for j in range(len(list_biog_float_tensors))]
-    #fill biogeoch tensor with mean value
-    fill_biogeoch_float_total_dataset = [fill_tensor_opt(reduced_biogeoch_float_total_dataset[i_float][:, 0:1, :, :, :], land_sea_masks, standard_mean_values[list_biogeoch_vars[0]]) for i_float in range(len(reduced_biogeoch_float_total_dataset))]
+    #fill biogeoch tensor with mean value --> modified with / 2 to transform it to 0.075
+    fill_biogeoch_float_total_dataset = [fill_tensor_opt(reduced_biogeoch_float_total_dataset[i_float][:, 0:1, :, :, :], land_sea_masks, standard_mean_values[list_biogeoch_vars[0]]/2) for i_float in range(len(reduced_biogeoch_float_total_dataset))]
     del reduced_biogeoch_float_total_dataset
     #merging part
     total_dataset_2 = [concatenate_tensors(list_physics_tensors[i], fill_biogeoch_float_total_dataset[i][:, 0:1, :, :, :], axis=1) for i in range(len(list_physics_tensors))]

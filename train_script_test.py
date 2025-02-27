@@ -27,10 +27,10 @@ from training_testing_functions import training_1p, testing_1p, training_2p, tes
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 0
-end_train_1p = 0
-end_1p = 0
-path_job = ""
+first_run_id = 2
+end_train_1p = 1
+end_1p = 1
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-22 10:42:50.013434"
 
 
 num_channel = number_channel  
@@ -109,8 +109,8 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 100 #400
-        snaperiod = 25  #25
+        n_epochs_1p = 4 #400
+        snaperiod = 2
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -148,8 +148,16 @@ elif end_1p == 1:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, path_losses_2, path_model_2, path_plots_2 = prepare_paths_2(path_job, "P_l", 40, 0, 0.001)
     list_year_week_indexes, old_float_total_dataset, list_float_profiles_coordinates, sampled_list_float_profile_coordinates, index_training_2, index_internal_testing_2, index_external_testing_2, train_dataset_2, internal_test_dataset_2, test_dataset_2 = generate_dataset_phase_2_saving("P_l", path_results_2, [2019, 2020, 2021], "dataset_training/float", land_sea_masks)
-    print("list years weeks indexes", list_year_week_indexes, flush=True)
     print("end data generation 2p", flush=True)
+    #saves indexes of phase 2
+    write_list(list_year_week_indexes, path_lr_2 + "/ywd_indexes.txt")
+    print("list years weeks indexes", list_year_week_indexes, flush=True)
+    write_list(index_training_2, path_lr_2 + "/index_training.txt")
+    write_list(index_internal_testing_2, path_lr_2 + "/index_internal_testing.txt")
+    write_list(index_external_testing_2, path_lr_2 + "/index_external_testing.txt")
+    print("index training", index_training_2, flush=True)
+    print("index internal testing", index_internal_testing_2, flush=True)
+    print("index external testing", index_external_testing_2, flush=True)
 
     #preparation of training:
     #3b: load the land_sea_masks

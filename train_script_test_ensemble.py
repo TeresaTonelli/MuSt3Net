@@ -31,7 +31,7 @@ from training_testing_functions import training_1p, testing_1p, training_2p, tes
 first_run_id = 2
 end_train_1p = 1
 end_1p = 1
-path_job = "results_job_2025-01-30 11:34:44.708444"
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-22 10:42:50.013434"
 
 
 num_channel = number_channel  
@@ -150,9 +150,14 @@ if end_1p == 0:
 
 elif end_1p == 1:
     #start 2 phase --> ensemble phase
-    n_ensemble = 10
+    n_ensemble = 2
     path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, 'P_l', 200, 0, 0.001)
     f_job_dev = open(path_job + "/file_job_dev.txt", "a")
+    years_week_dupl_indexes_1 = read_list(path_lr + "/ywd_indexes.txt")
+    print("years week duplicates", years_week_dupl_indexes_1, flush=True)
+    index_1_ext_test = read_list(path_lr + "/index_external_testing.txt")
+    print("test data phase 1", index_1_ext_test, flush=True)
+    transposed_latitudes_coordinates_1 = re_load_transp_lat_coordinates("dataset_training/total_dataset", years_week_dupl_indexes_1)
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
 
@@ -164,9 +169,19 @@ elif end_1p == 1:
 
     for i_ens in range(n_ensemble):
         list_year_week_indexes, old_float_total_dataset, list_float_profiles_coordinates, sampled_list_float_profile_coordinates, index_training_2, index_internal_testing_2, index_external_testing_2, train_dataset_2, internal_test_dataset_2, test_dataset_2 = generate_dataset_phase_2_saving("P_l", path_results_2, [2019, 2020, 2021], "dataset_training/float", land_sea_masks)
-        ##print("list years weeks indexes", list_year_week_indexes, flush=True)
+        #saves indexes of phase 2 for each ensemble
+        write_list(list_year_week_indexes, path_lr_2 + "ensemble/ywd_indexes.txt")
+        print("list years weeks indexes", list_year_week_indexes, flush=True)
+        write_list(index_training_2, path_lr_2 + "/index_training.txt")
+        write_list(index_internal_testing_2, path_lr_2 + "/index_internal_testing.txt")
+        write_list(index_external_testing_2, path_lr_2 + "/index_external_testing.txt")
         print("end data generation 2p", flush=True)
         path_ensemble_model = paths_ensemble_models[i_ens]
+        #saves indexes of phase 2 for each ensemble
+        write_list(list_year_week_indexes, path_ensemble_model + "/ywd_indexes.txt")
+        write_list(index_training_2, path_ensemble_model + "/index_training.txt")
+        write_list(index_internal_testing_2, path_ensemble_model + "/index_internal_testing.txt")
+        write_list(index_external_testing_2, path_ensemble_model + "/index_external_testing.txt")
         path_losses_2 = path_ensemble_model + "/losses"
         if not os.path.exists(path_losses_2):
             os.makedirs(path_losses_2)
@@ -189,13 +204,13 @@ elif end_1p == 1:
         train_losses_2p = []
         test_losses_2p = []
         model_2p_save_path = path_results_2
-        ##training_2p(n_epochs_2p, snaperiod_2p, l_r_2p, my_mean_tensor_2p, my_std_tensor_2p, train_dataset_2, internal_test_dataset_2, index_training_2, index_internal_testing_2, land_sea_masks, exp_weights, old_float_total_dataset, sampled_list_float_profile_coordinates, f_2, f_2_test, losses_2p, train_losses_2p, test_losses_2p, path_results, model_2p_save_path, path_model_2, path_losses_2)
+        training_2p(n_epochs_2p, snaperiod_2p, l_r_2p, my_mean_tensor_2p, my_std_tensor_2p, train_dataset_2, internal_test_dataset_2, index_training_2, index_internal_testing_2, land_sea_masks, exp_weights, old_float_total_dataset, sampled_list_float_profile_coordinates, f_2, f_2_test, losses_2p, train_losses_2p, test_losses_2p, path_results, model_2p_save_path, path_model_2, path_losses_2)
         #copy the model checkpoint_2 inside the directory of the current ensemble model
-        ##source = path_results_2 + "/model_checkpoint_2.pth"
-        ##destination = path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth"
-        ##with open(source, 'rb') as src, open(destination, 'wb') as dst:
-          ##  dst.write(src.read())
-        ##os.remove(source)
+        source = path_results_2 + "/model_checkpoint_2.pth"
+        destination = path_ensemble_model + "/model_checkpoint_2_ens_" + str(i_ens) + ".pth"
+        with open(source, 'rb') as src, open(destination, 'wb') as dst:
+            dst.write(src.read())
+        os.remove(source)
 
 
         #test 2 phase:
@@ -214,7 +229,7 @@ elif end_1p == 1:
         #ADD THE EVAL OF MODEL_1P
         model_1p.eval()
         #testing_2p("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, my_mean_tensor_2p, my_std_tensor_2p)
-        ##testing_2p_ensemble("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2p, my_std_tensor_2p, exp_weights, path_losses_2)
+        testing_2p_ensemble("P_l", path_plots_2, list_year_week_indexes, biogeoch_total_dataset, old_float_total_dataset, model_1p, model_2p, test_dataset_2, index_external_testing_2, land_sea_masks, list_float_profiles_coordinates, sampled_list_float_profile_coordinates,my_mean_tensor_2p, my_std_tensor_2p, exp_weights, path_losses_2)
 
 
     #phase of evaluation of mean and standard deviation of ensemble models
@@ -224,6 +239,24 @@ elif end_1p == 1:
     for i_m in range(len(models_list)):
         model = models_list[i_m]
         model.load_state_dict(checkpoint_list[i_m]['model_state_dict'])
+        #check of weights
+        mismatch = False
+        for (name1, param1), (name2, param2) in zip(checkpoint_list[i_m]['model_state_dict'].items(), models_list[i_m].state_dict().items()):
+            if not torch.equal(param1.cpu(), param2.cpu()):
+                print(f"Mismatch in parameter: {name1}")
+                mismatch = True
+        if not mismatch:
+            print("All model parameters match exactly!")
+        models_list[i_m] = model   #AGGIUNGEREI STA COSA QUA PèERCHE SECONDO ME ALTRIMENTI LA LISTA TIENE SOLO I COMPLETION E NON I MODEL LOAD STATE DICT --> PERò PRIMA IL RISULTATO AVEVA SENSO
+        #check of weights
+        print("check after")
+        mismatch = False
+        for (name1, param1), (name2, param2) in zip(checkpoint_list[i_m]['model_state_dict'].items(), models_list[i_m].state_dict().items()):
+            if not torch.equal(param1.cpu(), param2.cpu()):
+                print(f"Mismatch in parameter: {name1}")
+                mismatch = True
+        if not mismatch:
+            print("All model parameters match exactly!")
     #print("old models list", type(old_models_list[0]))
     print("models list", type(models_list[0]))
     
