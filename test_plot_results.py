@@ -10,7 +10,8 @@ import seaborn as sns
 from convolutional_network import CompletionN
 from hyperparameter import *
 from normalization import Normalization, tmp_Normalization
-from utils_training_1 import load_tensors, load_land_sea_masks, load_old_total_tensor, load_transp_lat_coordinates
+from utils_function import compute_profile_coordinates
+from utils_training_1 import load_tensors, load_land_sea_masks, load_old_total_tensor, load_transp_lat_coordinates, re_load_float_input_data
 from plot_results_final import plot_NN_maps_final_1, plot_NN_maps_final_2, plot_models_profiles_1, plot_models_profiles_2
 from plot_results import plot_NN_maps
 
@@ -69,7 +70,7 @@ input_tensor = input_tensor[0]
 CNN_model = CompletionN()
 
 #plot the map
-plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, "P_l", path_mean_std, path_fig_channel, mean_layer=True, list_layers=[0, 40, 80, 120, 180, 300])
+#plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, "P_l", path_mean_std, path_fig_channel, mean_layer=True, list_layers=[0, 40, 80, 120, 180, 300])
 
 
 
@@ -97,4 +98,54 @@ tensor_output_num_model = torch.unsqueeze(load_old_total_tensor("dataset_trainin
 #load coordinates ot plot
 list_to_plot_coordinates = load_transp_lat_coordinates("dataset_training/total_dataset/P_l/2019/", [(24, 2)])[0]
 
-plot_models_profiles_1(input_tensor, CNN_model, tensor_output_num_model, path_job, "P_l", path_mean_std, path_fig_channel_prof_1, list_to_plot_coordinates)
+#plot_models_profiles_1(input_tensor, CNN_model, tensor_output_num_model, path_job, "P_l", path_mean_std, path_fig_channel_prof_1, list_to_plot_coordinates)
+
+
+
+#PLOT NN MAPS PHASE 2
+#preparing paths
+path_results_2 = path_job + "/results_training_2_ensemble"
+list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
+path_fig_channel_2 = path_results_2 + "/P_l/20/lrc_0.001/plots_2_final"
+if not os.path.exists(path_fig_channel_2):
+    os.makedirs(path_fig_channel_2)
+path_fig_channel_2_mean = path_fig_channel_2 + "/mean"
+if not os.path.exists(path_fig_channel_2_mean):
+    os.makedirs(path_fig_channel_2_mean)
+path_fig_channel_2_std = path_fig_channel_2 + "/std"
+if not os.path.exists(path_fig_channel_2_std):
+    os.makedirs(path_fig_channel_2_std)
+
+#preparing input data
+input_tensor_2 = re_load_float_input_data("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", [(2019, 24)])
+input_tensor_2 = tmp_Normalization(input_tensor_2, "2p", path_mean_std_2)
+input_tensor_2 = input_tensor_2[0]
+
+plot_NN_maps_final_2(input_tensor_2, path_job, list_masks, "P_l", [path_fig_channel_2_mean, path_fig_channel_2_std], 10, mean_layer=True, list_layers = [0, 40, 80, 120, 180, 300])
+
+
+
+#PLOT PROFILES 2 PHASE
+#preparing paths
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-22 10:42:50.013434"
+path_results_2 = path_job + "/results_training_2_ensemble"
+list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
+path_fig_channel_prof_2 = path_fig_channel_2 + "/profiles_2_final"
+if not os.path.exists(path_fig_channel_prof_2):
+    os.makedirs(path_fig_channel_prof_2)
+
+#preparing input data
+#BFM input data
+input_tensor_BFM = torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", 0, [(2019, 24, 2)])[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1)
+#input phys + float data
+input_tensor_2 = re_load_float_input_data("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", [(2019, 24)])
+input_tensor_2 = tmp_Normalization(input_tensor_2, "2p", path_mean_std_2)
+input_tensor_2 = input_tensor_2[0]
+
+#list float profiles coordinates
+float_tensor = torch.load("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/float/2019/final_tensor/P_l/datetime_24.pt")[:, :, :-2, :, 1:-1]
+list_float_profiles_coordinates = compute_profile_coordinates(float_tensor[:, 0:1, :, :, :])
+
+#plot_models_profiles_2(input_tensor_2, input_tensor_BFM, float_tensor, path_job, "P_l", path_mean_std_2, path_fig_channel_prof_2, list_float_profiles_coordinates, 10)
