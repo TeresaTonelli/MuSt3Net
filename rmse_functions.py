@@ -75,10 +75,10 @@ def rmse_ga_season_2(list_input_tensors, indexes_train, indexes_test, list_float
         print("count zero ga masks", [torch.count_nonzero(float_coord_masks[i]) for i in range(len(float_coord_masks))], flush=True)
         season_losses_train = [convolutional_network_float_exp_weighted_loss(season_float_tensors_train[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_train[i].float(), land_sea_masks, float_coord_masks[i], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_train))]
         print("season losses train", season_losses_train, flush=True)
-        mean_season_loss_train = np.mean(season_losses_train)
+        mean_season_loss_train = np.nanmean(season_losses_train)
         print("season loss train", mean_season_loss_train, flush=True)
         season_losses_test = [convolutional_network_float_exp_weighted_loss(season_float_tensors_test[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_test[i].float(), land_sea_masks, float_coord_masks[i], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_test))]
-        mean_season_loss_test = np.mean(season_losses_test)
+        mean_season_loss_test = np.nanmean(season_losses_test)
         print("season loss test", mean_season_loss_test, flush=True)
     return mean_season_loss_train, mean_season_loss_test
 
@@ -101,8 +101,8 @@ def RMSE_ga_season(path_job, years_week_indexes):
     checkpoint_CNN = torch.load(path_job + "/results_training_2/model_checkpoint_2.pth", map_location=device)
     CNN_model.load_state_dict(checkpoint_CNN['model_state_dict'])
     loss_results = []
-    for my_ga in ["NWM"]:  #list(dict_ga.keys()):
-        for season in ["winter"]:   #list(dict_season.keys()):
+    for my_ga in list(dict_ga.keys()):
+        for season in list(dict_season.keys()):
             list_loss_ga_season = []
             list_loss_ga_season.append(my_ga)
             list_loss_ga_season.append(season)
@@ -112,6 +112,7 @@ def RMSE_ga_season(path_job, years_week_indexes):
     #Save RMSE results in a .txt file
     for list_loss in loss_results:
         with open(path_job + "/results_training_2/" + "losses_ga_season.txt", "a") as f:
+            f.write("\n")
             f.write(",".join([list_loss[0], list_loss[1], str(list_loss[2])]))
     return None
 
@@ -138,8 +139,8 @@ def RMSE_ensemble_ga_season(path_job, years_week_indexes, n_ens):
         list_CNN_model[i_ens].load_state_dict(list_checkpoints_CNN[i_ens]['model_state_dict'])
     #start RMSE evaluation
     for i_ens in range(n_ens):
-        for my_ga in list(dict_ga.keys()):
-            for my_season in list(dict_season.keys()):
+        for my_ga in ["NWM"]:   #list(dict_ga.keys()):
+            for my_season in ["winter"]:    #list(dict_season.keys()):
                 loss_ga_season_train, loss_ga_season_test = loss_ga_season_train, loss_ga_season_test = rmse_ga_season_2(input_dataset_2, list_index_training_2[i_ens], list_index_ext_testing_2[i_ens] + list_index_int_testing_2[i_ens], list_float_tensors, list_float_coordinates, list_CNN_model[i_ens], years_week_indexes, my_ga, my_season, path_mean_std)
                 tensor_loss_ga_season_ens[i_ens, 0, list(dict_ga.keys()).index(my_ga), list(dict_season.keys()).index(my_season)] = loss_ga_season_train
                 tensor_loss_ga_season_ens[i_ens, 1, list(dict_ga.keys()).index(my_ga), list(dict_season.keys()).index(my_season)] = loss_ga_season_test

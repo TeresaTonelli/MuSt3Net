@@ -7,7 +7,7 @@ import os
 from convolutional_network import CompletionN
 from hyperparameter import *
 from normalization import Normalization, tmp_Normalization
-from rmse_functions import select_season_tensors, create_ga_mask_full, compute_rmse_ga_season_2, compute_rmse_ga_season_2_ensemble, rmse_ga_season_2
+from rmse_functions import select_season_tensors, create_ga_mask_full, compute_rmse_ga_season_2, compute_rmse_ga_season_2_ensemble, rmse_ga_season_2, RMSE_ensemble_ga_season#
 from utils_function import compute_profile_coordinates
 from utils_generation_train_1p import write_list, read_list
 from utils_training_1 import load_land_sea_masks, re_load_tensors, re_load_old_float_tensors, re_load_float_input_data
@@ -129,7 +129,7 @@ test_dataset_2 = [input_dataset_2[i] for i in index_ext_testing_2] + [input_data
 
 
 
-ensemble_mode = False
+ensemble_mode = "no_false_no_true"
 if ensemble_mode == False:
     CNN_model = CompletionN()
     checkpoint_CNN = torch.load(path_job + "/results_training_2/model_checkpoint_2.pth", map_location=device)
@@ -146,7 +146,8 @@ if ensemble_mode == False:
             loss_ga_season_train, loss_ga_season_test = rmse_ga_season_2(input_dataset_2, index_training_2, index_ext_testing_2 + index_int_testing_2, list_float_tensors, list_float_coordinates, CNN_model, years_week_indexes, my_ga, season, path_mean_std)
             list_loss_ga_season.append([loss_ga_season_train, loss_ga_season_test])
             loss_results.append(list_loss_ga_season)
-else:
+elif ensemble_mode == True:
+    #questa parte non è stata ricontrollata, ma basta usare la funzione dentro a rmse_functions.py, quella per gli ensemble
     list_CNN_model = [CompletionN() for i in range(10)]
     path_lr = path_job + "/results_training_2_ensemble/P_l/20/lrc_0.001"
     list_checkpoints_CNN = [torch.load(path_lr + "/ensemble_model_" + str(i_ens) + "/" + 'model_checkpoint_2_ens_' + str(i_ens) + '.pth', map_location=device) for i_ens in range(10)]
@@ -165,6 +166,13 @@ else:
             loss_results.append(list_loss_ga_season)
 
 #write the list of losses in a txt file
-for list_loss in loss_results:
-    with open(path_job + "/results_training_2/" + "losses_ga_season.txt", "a") as f:
-        f.write(",".join([list_loss[0], list_loss[1], str(list_loss[2])]))
+#for list_loss in loss_results:
+#    with open(path_job + "/results_training_2/" + "losses_ga_season.txt", "a") as f:
+#        f.write("\n")
+#        f.write(",".join([list_loss[0], list_loss[1], str(list_loss[2])]) + "\n")
+
+
+
+
+
+RMSE_ensemble_ga_season(path_job, years_week_indexes, 2)
