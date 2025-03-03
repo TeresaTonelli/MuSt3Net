@@ -166,7 +166,8 @@ def plot_NN_maps_final_2(input_tensor, path_job, list_masks, var, path_fig_chann
         plt.close(fig_mean)
         #plot the std
         fig_std, ax_std = plt.subplots()
-        ax_std.imshow(plot_tensor_std[0, channel, depth_level, :, :] / plot_tensor_mean[0, channel, depth_level, :, :] * 100, cmap=newcmap, vmin = 0, vmax = 100, interpolation='none')
+        ax_std.imshow(plot_tensor_std[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
+        #ax_std.imshow(plot_tensor_std[0, channel, depth_level, :, :] / plot_tensor_mean[0, channel, depth_level, :, :] * 100, cmap=newcmap, vmin = 0, vmax = 100, interpolation='none')
         #plt.colorbar(shrink=0.6, pad=0.01)
         my_xticks= np.arange(0, h, 30)
         my_yticks = np.arange(0, w, 30)
@@ -263,6 +264,7 @@ def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_floa
         profile_tensor_float = moving_average(profile_tensor_float.detach().cpu().numpy(), 3)
         profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
         profile_tensor_NN_1_model = moving_average(profile_tensor_NN_1_model.detach().cpu().numpy(), 3)
+        profile_tensor_NN_model = np.maximum(profile_tensor_NN_model, 0)
         #plot profiles
         path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
         plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
