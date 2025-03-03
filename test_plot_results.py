@@ -57,7 +57,7 @@ path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_re
 path_results_1 = path_job + "/results_training_1"
 list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
 path_mean_std = path_results_1 + "/mean_and_std_tensors_plots/mean_and_std_tensors"
-path_fig_channel = path_results_1 + "/P_l/200/lrc_0.001/plots_final"
+path_fig_channel = path_results_1 + "/P_l/200/lrc_0.001/plots_1_final"
 if not os.path.exists(path_fig_channel):
     os.makedirs(path_fig_channel)
 
@@ -98,7 +98,7 @@ tensor_output_num_model = torch.unsqueeze(load_old_total_tensor("dataset_trainin
 #load coordinates ot plot
 list_to_plot_coordinates = load_transp_lat_coordinates("dataset_training/total_dataset/P_l/2019/", [(24, 2)])[0]
 
-#plot_models_profiles_1(input_tensor, CNN_model, tensor_output_num_model, path_job, "P_l", path_mean_std, path_fig_channel_prof_1, list_to_plot_coordinates)
+plot_models_profiles_1(input_tensor, CNN_model, tensor_output_num_model, path_job, "P_l", path_mean_std, path_fig_channel_prof_1, list_to_plot_coordinates)
 
 
 
@@ -122,7 +122,7 @@ input_tensor_2 = re_load_float_input_data("/leonardo_work/OGS23_PRACE_IT_0/ttone
 input_tensor_2 = tmp_Normalization(input_tensor_2, "2p", path_mean_std_2)
 input_tensor_2 = input_tensor_2[0]
 
-plot_NN_maps_final_2(input_tensor_2, path_job, list_masks, "P_l", [path_fig_channel_2_mean, path_fig_channel_2_std], 10, mean_layer=True, list_layers = [0, 40, 80, 120, 180, 300])
+#plot_NN_maps_final_2(input_tensor_2, path_job, list_masks, "P_l", [path_fig_channel_2_mean, path_fig_channel_2_std], 10, mean_layer=True, list_layers = [0, 40, 80, 120, 180, 300])
 
 
 

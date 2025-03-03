@@ -69,18 +69,22 @@ def plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, var, pat
         if mean_layer == False:
             depth_levels = np.arange(0, chl_tensor.shape[2])
             masked_chl_tensor = apply_masks(chl_tensor, list_masks)
+            #mask_land = torch.cat(tuple([list_masks[i][:, :, :, :, 1:-1] for i in range(0, len(list_masks)-2)])).to(device)
             channel = compute_channel(var)
         else: 
             depth_levels = np.arange(0, len(list_layers) - 1)
             masked_NN_tensor = apply_masks(chl_tensor, list_masks)
             masked_chl_tensor = compute_mean_layers(masked_NN_tensor, list_layers, 2, (1, 1, len(list_layers), masked_NN_tensor.shape[3], masked_NN_tensor.shape[4]))   
+            #mask_land = torch.cat(tuple([list_masks[int(layer / resolution[2])][:, :, :, :, 1:-1] for layer in list_layers[:-1]])).to(device)
             channel = compute_channel(var)
         for depth_level in depth_levels:
-            plot_tensor = torch.clone(masked_chl_tensor)   
+            plot_tensor = torch.clone(masked_chl_tensor) 
+            #plot_tensor = plot_tensor.masked_fill(mask_land == 0, -1.0)
             plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
-            plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy())
-            cmap = plt.get_cmap("jet")   
+            plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy()) 
+            #plot_tensor = np.ma.masked_where(plot_tensor == -1.0, plot_tensor)
             newcmap = compute_cmap('jet')
+            #newcmap.set_bad(color='white')
             plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')
             #plt.colorbar(shrink=0.6, pad=0.01)
             my_xticks= np.arange(0, h, 30)
@@ -201,6 +205,7 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
             profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
             profile_tensor_input_NN = moving_average(profile_tensor_input_NN.detach().cpu().numpy(), 3)
             profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
+            profile_tensor_NN_model = np.maximum(profile_tensor_NN_model, 0)
             #plot profiles
             path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
             plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
