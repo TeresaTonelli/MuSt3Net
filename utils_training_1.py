@@ -253,9 +253,6 @@ def re_load_float_input_data(tensor_directory, year_week_indexes):
         float_profiles_coordinates = compute_profile_coordinates(biogeoch_float_tensor[:, 0:1, :, :, :]) 
         sampled_float_profile_coordinates = random.sample(float_profiles_coordinates, int(0.4 * len(float_profiles_coordinates))) 
         reduced_biogeoch_float_tensor = remove_float(biogeoch_float_tensor, sampled_float_profile_coordinates)
-        print("land sea masks", len(land_sea_masks))
-        print("land sea mask shape", land_sea_masks[0].shape)
-        print("reduced tensor shape", reduced_biogeoch_float_tensor[:, 0:1, :, :, :].shape)
         fill_biogeoch_float_tensor = fill_tensor_opt(reduced_biogeoch_float_tensor[:, 0:1, :, :, :], land_sea_masks, standard_mean_values[list_biogeoch_vars[0]]/2)
         tensor_data_2 = concatenate_tensors(physic_tensor, fill_biogeoch_float_tensor[:, 0:1, :, :, :], axis=1)
         input_float_tensors.append(tensor_data_2)
@@ -285,8 +282,16 @@ def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dup
             if int(week_dupl_indexes[i_w_d][0]) < 14:
                 print("current week", week_dupl_indexes[i_w_d][0])
                 print("count of 0.15 in a single tensor", (total_year_dataset[i_w_d] == 0.15).sum().item())
-                total_year_dataset[i_w_d][total_year_dataset[i_w_d] == 0.15] = 0.05   #0.075
-                print("count of 0.075 in a single tensor", (total_year_dataset[i_w_d] == 0.05).sum().item())
+                total_year_dataset[i_w_d][total_year_dataset[i_w_d] == 0.15] = 0.075   #0.075
+                print("count of 0.075 in a single tensor", (total_year_dataset[i_w_d] == 0.075).sum().item())
+        #change the mean from a fixed value to the mean between chl values of the current week   --> DEVO COMMENTARE LA PARTE SOPRA
+        for i_w_d in range(len(week_dupl_indexes)):
+            chl_mask = (total_year_dataset[i_w_d] != 0) & (total_year_dataset[i_w_d] != 0.15)
+            mean_chl_value = total_year_dataset[i_w_d][chl_mask].float().mean()
+            print("chl mean value", mean_chl_value)
+            print("count of 0.15 in a single tensor", (total_year_dataset[i_w_d] == 0.15).sum().item())
+            total_year_dataset[i_w_d][total_year_dataset[i_w_d] == 0.15] = mean_chl_value
+            print("count of mean chl in a single tensor", (total_year_dataset[i_w_d] == mean_chl_value).sum().item())
         #now, load the transposed latitudes coordinates
         transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
         #now modifies the indexes relative to week and duplicates, adding the year

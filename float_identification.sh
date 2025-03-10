@@ -10,7 +10,7 @@
 
 #SBATCH --output=float_identif.%j
 
-#SBATCH --account=OGS23_PRACE_IT_0
+#SBATCH --account=IscrC_MEDConNN
 #SBATCH --job-name=job_float_identif
 
 #SBATCH --cpus-per-task=1

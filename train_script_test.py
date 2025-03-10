@@ -166,7 +166,7 @@ elif end_1p == 1:
 
     #train 2 phase:
     print("starting training 2p preparation", flush=True)
-    n_epochs_2p = 20   #40
+    n_epochs_2p = 40    #20
     snaperiod_2p = 5
     l_r_2p = 0.001
     f_2, f_2_test = open(path_losses_2 + "/train_loss.txt", "w+"), open(path_losses_2 + "/test_loss.txt", "w+")

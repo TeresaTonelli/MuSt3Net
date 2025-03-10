@@ -38,6 +38,7 @@ class CompletionN(nn.Module):
         self.do5 = nn.Dropout(0.15)
 
         self.conv6 = nn.Conv3d(128, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1)
+        #self.conv6 = nn.ConvTranspose3d(128, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1)
         #self.af6 = nn.ReLU()    # --> torglierla perchè tipicamente non si chiude con una ReLU
 
         #self.dropout = nn.Dropout(0.15)    #aggiunto dopo, da controllare se funziona   #metterlo dopo ognuno 

@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:02:29
+#SBATCH --time=00:34:29
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=300G
+#SBATCH --mem=64G
 #SBATCH --partition=boost_usr_prod
 
 #SBATCH --output=rmse_computation.%j
 
-#SBATCH --account=OGS23_PRACE_IT_0
+#SBATCH --account=IscrC_MEDConNN
 #SBATCH --job-name=job_rmse
 
 #SBATCH --cpus-per-task=1

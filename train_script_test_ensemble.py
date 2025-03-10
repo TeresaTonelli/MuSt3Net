@@ -150,7 +150,7 @@ if end_1p == 0:
 
 elif end_1p == 1:
     #start 2 phase --> ensemble phase
-    n_ensemble = 2
+    n_ensemble = 4
     path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, 'P_l', 200, 0, 0.001)
     f_job_dev = open(path_job + "/file_job_dev.txt", "a")
     years_week_dupl_indexes_1 = read_list(path_lr + "/ywd_indexes.txt")
@@ -163,8 +163,8 @@ elif end_1p == 1:
 
     #preparation of general training 2 ingredients:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 12   #40
-    snaperiod_2p = 4
+    n_epochs_2p = 40   #40
+    snaperiod_2p = 5
     l_r_2p = 0.001
 
     for i_ens in range(n_ensemble):
