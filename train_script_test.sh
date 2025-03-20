@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:39:59
+#SBATCH --time=00:00:19
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=300G   #256G  #200G
+#SBATCH --mem=300sG   #256G  #200G
 #SBATCH --partition=boost_usr_prod
 
 #SBATCH --output=train_script.%j

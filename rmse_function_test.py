@@ -7,7 +7,7 @@ import os
 from convolutional_network import CompletionN
 from hyperparameter import *
 from normalization import Normalization, tmp_Normalization
-from rmse_functions import select_season_tensors, create_ga_mask_full, compute_rmse_ga_season_2, compute_rmse_ga_season_2_ensemble, rmse_float_CNN_BFM, rmse_ga_season_2, RMSE_ensemble_ga_season#
+from rmse_functions import select_season_tensors, create_ga_mask_full, compute_rmse_ga_season_2, compute_rmse_ga_season_2_ensemble, rmse_float_CNN_BFM, rmse_ga_season_2, RMSE_ensemble_ga_season, RMSE_ensemble_ga, RMSE_ensemble_season
 from utils_function import compute_profile_coordinates
 from utils_generation_train_1p import write_list, read_list
 from utils_training_1 import load_land_sea_masks, re_load_tensors, re_load_old_float_tensors, re_load_float_input_data, load_old_total_tensor
@@ -115,22 +115,22 @@ index_int_testing_2 = read_list(path_job + "/results_training_2/P_l/40/lrc_0.001
 index_ext_testing_2 = read_list(path_job + "/results_training_2/P_l/40/lrc_0.001" + "/index_external_testing.txt")
 
 #float dataset
-list_float_tensors = re_load_old_float_tensors("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", years_week_indexes)
-list_float_coordinates = [compute_profile_coordinates(torch.unsqueeze(float_tensor[:, -1, :, :, :], 1)) for float_tensor in list_float_tensors]
-list_float_tensors = [float_tensor[:, :, :-1, :, :] for float_tensor in list_float_tensors]
+##list_float_tensors = re_load_old_float_tensors("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", years_week_indexes)
+##list_float_coordinates = [compute_profile_coordinates(torch.unsqueeze(float_tensor[:, -1, :, :, :], 1)) for float_tensor in list_float_tensors]
+##list_float_tensors = [float_tensor[:, :, :-1, :, :] for float_tensor in list_float_tensors]
 
 #total input dataset phase 2
-input_dataset_2 = re_load_float_input_data("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", years_week_indexes)
-input_dataset_2 = tmp_Normalization(input_dataset_2, "2p", path_mean_std)
+##input_dataset_2 = re_load_float_input_data("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", years_week_indexes)
+##input_dataset_2 = tmp_Normalization(input_dataset_2, "2p", path_mean_std)
 
 #train and test dataset phase 2
-train_dataset_2 = [input_dataset_2[i] for i in index_training_2]
-test_dataset_2 = [input_dataset_2[i] for i in index_ext_testing_2] + [input_dataset_2[i] for i in index_int_testing_2]                     
+##train_dataset_2 = [input_dataset_2[i] for i in index_training_2]
+##test_dataset_2 = [input_dataset_2[i] for i in index_ext_testing_2] + [input_dataset_2[i] for i in index_int_testing_2]                     
 
 #BFM data
-list_BFM_tensors = [load_old_total_tensor("dataset_training/old_total_dataset/", i, years_week_indexes) for i in range(len(years_week_indexes))]
-list_BFM_tensors = [torch.unsqueeze(BFM_tensor[:, -1, :, :, :], 1) for BFM_tensor in list_BFM_tensors]
-print("dimension BFM tensor", list_BFM_tensors[0].shape, flush=True)
+##list_BFM_tensors = [load_old_total_tensor("dataset_training/old_total_dataset/", i, years_week_indexes) for i in range(len(years_week_indexes))]
+##list_BFM_tensors = [torch.unsqueeze(BFM_tensor[:, -1, :, :, :], 1) for BFM_tensor in list_BFM_tensors]
+##print("dimension BFM tensor", list_BFM_tensors[0].shape, flush=True)
 
 ensemble_mode = "no_ga_jump"
 if ensemble_mode == False:
@@ -185,4 +185,6 @@ elif ensemble_mode == "no_ga":
 
 
 
-RMSE_ensemble_ga_season(path_job, years_week_indexes, 2)
+#RMSE_ensemble_ga_season(path_job, years_week_indexes, 1)
+RMSE_ensemble_ga(path_job, years_week_indexes, 10)
+#RMSE_ensemble_season(path_job, years_week_indexes, 1, behavior_season="bloom_DCM")

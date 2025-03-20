@@ -84,7 +84,7 @@ def plot_NN_maps(NN_tensor, list_masks, var, path_fig_channel):
         plt.yticks(my_yticks, my_yticks_label, fontsize=6)
         plt.xlabel("longitude")
         plt.ylabel("latitude")
-        plt.savefig(path_fig_channel + "/depth_" + str(depth_level) + ".png")
+        plt.savefig(path_fig_channel + "/depth_" + str(depth_level) + ".png", dpi=600)
         plt.close()
         #Part with the mask and the grid
         #cmap = plt.get_cmap("jet")

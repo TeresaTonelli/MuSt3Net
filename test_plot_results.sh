@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:01:29
+#SBATCH --time=04:59:39
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=128G  #200G
+#SBATCH --mem=64G  
 #SBATCH --partition=boost_usr_prod
 
 #SBATCH --output=test_final_plots.%j

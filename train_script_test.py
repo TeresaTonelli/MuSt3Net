@@ -27,10 +27,10 @@ from training_testing_functions import training_1p, testing_1p, training_2p, tes
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 2
-end_train_1p = 1
-end_1p = 1
-path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-22 10:42:50.013434"
+first_run_id = 0
+end_train_1p = 0
+end_1p = 0
+path_job = ""
 
 
 num_channel = number_channel  
@@ -48,7 +48,10 @@ elif first_run_id == 1:
 
 #2: creo il device per le GPU e porto i dati su GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device", device)
+print("device", device, flush=True)
+print(torch.cuda.get_device_name(0), flush=True)
+print(torch.version.cuda, flush=True)
+print(torch.__version__, flush=True)
 
 
 #3: Load dei tensori e delle varie liste per definire il total_dataset

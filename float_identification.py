@@ -85,7 +85,7 @@ def single_float_device_identifier(file_dir, list_year_week, list_lat_long, epsi
             line_info_data = line_elements[0]
             line_info_data = line_info_data.split(",")
             float_device = line_info_data[0]
-            float_device = float_device.split("_", 1)[0]
+            float_device = float_device.split(".", 1)[0]   #prima era _
             latitude = float(line_info_data[1])
             longitude = float(line_info_data[2])
             time = line_info_data[3]
@@ -125,10 +125,10 @@ def float_device_identifier(file_dir, list_year_week, list_lat_long, epsilons):
 
 list_float_devices = compute_list_float_devices("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt")
 #select_float_measures("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", '6903823/SD6903823')
-search_unseen_float("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", list_float_devices, [2019, 2020, 2021], 'CHLA')
+#search_unseen_float("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", list_float_devices, [2019, 2020, 2021], 'CHLA')
 
 #single_float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", [2020, 6], [73, 271], [3.0, 3.0])
-#float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt",[2020,6], [[26, 521], [53, 286], [73, 271]], [3.0, 3.0])
+float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt",[2021,4], [[62, 447], [139, 66]], [3.0, 3.0])
 
 print("end")
 
