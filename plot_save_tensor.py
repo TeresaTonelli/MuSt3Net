@@ -138,4 +138,6 @@ def save_tensors_directory(kindof, tensors_directory, year_interval, flag, var, 
 
 
 
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2022/saved_parallelepiped_physics_single/vozocrtx/", (2022, 2023), "t", "vozocrtx", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
+#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/votemper/", (2023, 2024), "t", "votemper", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
+#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/vosaline/", (2023, 2024), "t", "vosaline", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
+#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/vomecrty/", (2023, 2024), "t", "vomecrty", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")

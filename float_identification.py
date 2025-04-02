@@ -28,7 +28,7 @@ def compute_list_float_devices(file_dir):
         line = lines[i_l]
         line_elements = line.split()
         float_device = line_elements[0].split(",")[0]
-        float_device = float_device.split("_", 1)[0]
+        #float_device = float_device.split(".", 1)[0]   #prima era _
         list_float_devices.append(float_device)
     return list(dict.fromkeys(list_float_devices))
 
@@ -43,7 +43,7 @@ def select_float_measures(file_dir, float_device_id, var='CHLA'):
         line_elements = line.split()
         list_variables = line_elements[1:]
         if var in list_variables:
-            float_device_i_l = lines[i_l].split()[0].split(",")[0].split("_", 1)[0]
+            float_device_i_l = lines[i_l].split()[0].split(",")[0]    #.split("_", 1)[0]
             if float_device_i_l == float_device_id:
                 list_indexes_float_data.append(i_l)
     return list_indexes_float_data
@@ -52,23 +52,37 @@ def select_float_measures(file_dir, float_device_id, var='CHLA'):
 def search_unseen_float(file_dir, list_float_devices, list_seen_years, var='CHLA'):
     """this function returns the float id of a float whose measures where never seen in a specific year interval (and in its past)"""
     list_unseen_float_devices = []
+    list_unseen_indexes = []
     with open(file_dir, 'r') as file:
         lines = file.readlines()
     for float_device in list_float_devices:
-        #print("float device", float_device)
-        float_counter = 0
+        #float_counter = 0
         float_devices_line_indexes = select_float_measures(file_dir, float_device, var)
+        #print("float devices line indexes", float_devices_line_indexes)
         for line_index in float_devices_line_indexes:
             time = lines[line_index].split()[0].split(",")[3]
             year, month, day = transform_float_data(time)
-            if int(year) not in list_seen_years and int(year) <= list_seen_years[0]:
-                break
-            else:
-                float_counter += 1
-        if float_counter == len(float_devices_line_indexes):
-            list_unseen_float_devices.append(float_device)
+            if int(year) > list_seen_years[-1]:
+                #print("line index", line_index)
+                #print("unseen float device", float_device)
+                list_unseen_indexes.append(line_index + 1)
+                list_unseen_float_devices.append(float_device)
     print("list unseen float devices", list_unseen_float_devices)
-    return list_unseen_float_devices
+    print("list unseen indexes", list_unseen_indexes)
+    return list_unseen_float_devices, list_unseen_indexes
+
+
+
+def create_float_txt(list_floats_indexes, file_total_floats):
+    """this function takes the list of selected float devices and creates a txt file which contains only the data refeering to those specific float devices"""
+    file_selected_floats = open("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_2022_Index.txt", "w")
+    with open(file_total_floats, 'r') as file:
+        float_lines = file.readlines()
+    for index in list_floats_indexes:
+        #file_selected_floats.write("\n")
+        file_selected_floats.write(float_lines[index-1])
+    return None
+
 
 
 
@@ -124,11 +138,13 @@ def float_device_identifier(file_dir, list_year_week, list_lat_long, epsilons):
 
 
 list_float_devices = compute_list_float_devices("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt")
-#select_float_measures("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", '6903823/SD6903823')
-#search_unseen_float("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", list_float_devices, [2019, 2020, 2021], 'CHLA')
+#print(list_float_devices[200:300], flush=True)
+#select_float_measures("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", '6901765/SD6901765_001.nc')
+list_unseen_floats, list_unseen_indexes = search_unseen_float("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", list_float_devices, [2019, 2020, 2021], 'CHLA')
+create_float_txt(list_unseen_indexes, "/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt")
 
 #single_float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", [2020, 6], [73, 271], [3.0, 3.0])
-float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt",[2021,4], [[62, 447], [139, 66]], [3.0, 3.0])
+#float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt",[2021,4], [[62, 447], [139, 66]], [3.0, 3.0])
 
 print("end")
 

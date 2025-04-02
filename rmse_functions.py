@@ -144,11 +144,11 @@ def rmse_ga_season_2_final(list_input_tensors, indexes_train, indexes_test, list
     print("ga", ga, flush=True)
     print("season", season, flush=True)
     if threshold == 20:
-        list_input_tensors = list_input_tensors[:105]
-        indexes_train = [i for i in indexes_train if i < 105]
-        indexes_test = [i for i in indexes_test if i < 105]
-        list_float_tensors = list_float_tensors[:105]
-        list_float_coordinates = list_float_coordinates[:105]
+        list_input_tensors = list_input_tensors[:157]
+        indexes_train = [i for i in indexes_train if i < 157]
+        indexes_test = [i for i in indexes_test if i < 157]
+        list_float_tensors = list_float_tensors[:157]
+        list_float_coordinates = list_float_coordinates[:157]
     #split dataset in training and testing
     list_input_training = [list_input_tensors[i_tr] for i_tr in indexes_train]
     list_input_testing = [list_input_tensors[i_te] for i_te in indexes_test]
@@ -343,7 +343,7 @@ def RMSE_ensemble_season(path_job, years_week_indexes, n_ens, threshold=20, beha
     mean_loss_ga_season_ensemble = torch.mean(tensor_loss_ga_season_ens, dim=0)
     #Save the results on a txt file
     for i_s in range(len(list(dict_season.keys()))):
-        with open(path_results_ensemble + "/losses_ga_season_final.txt", "a") as f:
+        with open(path_results_ensemble + "/losses_season_final.txt", "a") as f:
             f.write("\n")
             f.write(",".join([list(dict_season.keys())[i_s], "train", str(mean_loss_ga_season_ensemble[0, i_s])]))
             f.write("\n")

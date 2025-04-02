@@ -186,5 +186,5 @@ elif ensemble_mode == "no_ga":
 
 
 #RMSE_ensemble_ga_season(path_job, years_week_indexes, 1)
-RMSE_ensemble_ga(path_job, years_week_indexes, 10)
-#RMSE_ensemble_season(path_job, years_week_indexes, 1, behavior_season="bloom_DCM")
+#RMSE_ensemble_ga(path_job, years_week_indexes, 10)
+RMSE_ensemble_season(path_job, years_week_indexes, 10, behavior_season="bloom_DCM")

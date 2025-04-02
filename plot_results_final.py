@@ -334,7 +334,7 @@ def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_floa
 def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_masks, var, path_plots, n_ensemble, ga, dict_coord_ga, mean_layer=False, list_layers = [], mean_ga=True):
     """function to generate the Hovmoller plot"""
     #part 1 --> network evaluation
-    sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.0, color_codes=True, rc=None)
+    sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.1, color_codes=True, rc=None)
     path_mean_std = path_job + "/results_training_2_ensemble/mean_and_std_tensors"
     path_lr = path_job + "/results_training_2_ensemble/" + var + "/20/lrc_0.001"
     my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -392,7 +392,7 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     #part 3 --> plot the Hovmoller
     #x_number_ticks = np.arange(0, len(x_ticks))
     #plt.figure(figsize=(8.8, 6))
-    fig, axs = plt.subplots(1, figsize=(14, 6))
+    fig, axs = plt.subplots(1, figsize=(9, 4))  #Prima era (14,6)
 
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
@@ -402,8 +402,8 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     plt.colorbar(im, shrink=0.9, pad=0.05)
     #axs.set_title("CNN-3DMedSea CHLA timeline")
     #axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=90)
-    x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
-    #x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019"])
+    #x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
+    x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
     axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
     #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
@@ -425,7 +425,7 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     path_plots_hov = path_plots + "/hovmoller"
     if not os.path.exists(path_plots_hov):
         os.makedirs(path_plots_hov)
-    plt.savefig(path_plots_hov + "/hovmoller_ngh_try_" + str(ga) +".png", dpi=400)
+    plt.savefig(path_plots_hov + "/hovmoller_ngh_try_external_oct_sept_" + str(ga) +".png", dpi=100)
 
     #path_plots_hov_BFM = path_plots + "/hovmoller_BFM"
     #if not os.path.exists(path_plots_hov_BFM):
@@ -433,3 +433,28 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     #plt.savefig(path_plots_hov_BFM + "/hovmoller_BFM.png", dpi=100)
 
     plt.close()
+
+
+
+def plot_Hovmoller_real_float(list_selected_float, path_job, list_masks, var, path_plots, ga, dict_coord_ga, mean_layer=False, list_layers = [], mean_ga=True):
+    """this function creates the Hovmoller relative to a selected, or more selected floats devices"""
+    #part 1: creation of the tensor
+    Hovmoller_tensor = torch.zeros(list_week_tensors[0].shape[2], len(list_week_tensors))
+    #part 2: plot the tensor
+    fig, axs = plt.subplots(1, figsize=(9, 4))  #Prima era (14,6)
+    cmap = plt.get_cmap('viridis')
+    cmap.set_under('white')
+    plt.grid(False)
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.45,cmap=cmap,aspect='auto')  #in questo modo dovrei stampare fino a 200 metri
+    plt.colorbar(im, shrink=0.9, pad=0.05)
+    x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
+    axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
+    #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
+    axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
+    axs.set_ylabel(r"depth [$m$]")
+    plt.tight_layout()
+    path_plots_hov = path_plots + "/hovmoller"
+    if not os.path.exists(path_plots_hov):
+        os.makedirs(path_plots_hov)
+    plt.savefig(path_plots_hov + "/hovmoller_float_oct_sept_" + str(ga) +".png", dpi=100)
+    return None

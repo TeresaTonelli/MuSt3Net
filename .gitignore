@@ -10,6 +10,7 @@ plots/
 
 dataset/
 dataset_training/
+total_float_tensor.pt
 
 results_job_*
 
@@ -23,6 +24,17 @@ train_script_ensemble.1*
 random_gen.*
 
 rmse_computation.1*
+
+2022_*
+2023_*
+biogeoch_float_data_gen.1*
+
+interpolation.1*
+make_data_phys_*
+open_npy_*
+open_npy.1*
+open_pt*
+plot_st.1*
 
 #images
 *.png

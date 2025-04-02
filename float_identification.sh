@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:00:10
+#SBATCH --time=00:02:30
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=32G  #200G
+#SBATCH --mem=16G  #200G
 #SBATCH --partition=boost_usr_prod
 
 #SBATCH --output=float_identif.%j

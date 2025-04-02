@@ -259,6 +259,22 @@ def re_load_float_input_data(tensor_directory, year_week_indexes):
     return input_float_tensors
 
 
+def re_load_float_input_data_external(tensor_directory, year_week_indexes, year_week_indexes_phys):
+    """this function loads and computes the old float tensors and prepares them with all the pre-processing useful for the training and testing"""
+    input_float_tensors = []
+    land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+    for i in range(len(year_week_indexes)):
+        physic_tensor = torch.load(tensor_directory + "/MODEL/" + str(year_week_indexes_phys[i][0]) + "/final_tensor/physics_vars/datetime_" + str(year_week_indexes_phys[i][1]) + ".pt")[:, :, :-1, :, :]
+        biogeoch_float_tensor = torch.load(tensor_directory + "/float/" + str(year_week_indexes[i][0]) + "/final_tensor/P_l/datetime_" + str(year_week_indexes[i][1]) + ".pt")[:, :, :-1, :, :]
+        float_profiles_coordinates = compute_profile_coordinates(biogeoch_float_tensor[:, 0:1, :, :, :]) 
+        sampled_float_profile_coordinates = random.sample(float_profiles_coordinates, int(0.05 * len(float_profiles_coordinates))) #prima era 0.4
+        reduced_biogeoch_float_tensor = remove_float(biogeoch_float_tensor, sampled_float_profile_coordinates)
+        fill_biogeoch_float_tensor = fill_tensor_opt(reduced_biogeoch_float_tensor[:, 0:1, :, :, :], land_sea_masks, standard_mean_values[list_biogeoch_vars[0]]/2)
+        tensor_data_2 = concatenate_tensors(physic_tensor, fill_biogeoch_float_tensor[:, 0:1, :, :, :], axis=1)
+        input_float_tensors.append(tensor_data_2)
+    return input_float_tensors
+
+
 def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dupl_per_week):
     """this function loads the tensor to generate the total dataset"""
     desired_n_tensor_per_year= int(n/len(years))
