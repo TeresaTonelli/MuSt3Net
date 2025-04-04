@@ -392,18 +392,18 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     #part 3 --> plot the Hovmoller
     #x_number_ticks = np.arange(0, len(x_ticks))
     #plt.figure(figsize=(8.8, 6))
-    fig, axs = plt.subplots(1, figsize=(9, 4))  #Prima era (14,6)
+    fig, axs = plt.subplots(1, figsize=(8, 6))  #Prima era (14,6)
 
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
     plt.grid(False)
 
-    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.45,cmap=cmap,aspect='auto')  #in questo modo dovrei stampare fino a 200 metri
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.4,cmap=cmap,aspect='auto')  #in questo modo dovrei stampare fino a 200 metri
     plt.colorbar(im, shrink=0.9, pad=0.05)
     #axs.set_title("CNN-3DMedSea CHLA timeline")
     #axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=90)
     #x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
-    x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
+    x_ticks_labels = np.array(["09/2022", "12/2022", "03/2023", "06/2023"])
     axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
     #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
@@ -425,7 +425,7 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     path_plots_hov = path_plots + "/hovmoller"
     if not os.path.exists(path_plots_hov):
         os.makedirs(path_plots_hov)
-    plt.savefig(path_plots_hov + "/hovmoller_ngh_try_external_oct_sept_" + str(ga) +".png", dpi=100)
+    plt.savefig(path_plots_hov + "/hovmoller_external_sept_aug_" + str(ga) +".png", dpi=600)
 
     #path_plots_hov_BFM = path_plots + "/hovmoller_BFM"
     #if not os.path.exists(path_plots_hov_BFM):
@@ -436,19 +436,32 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
 
 
 
-def plot_Hovmoller_real_float(list_selected_float, path_job, list_masks, var, path_plots, ga, dict_coord_ga, mean_layer=False, list_layers = [], mean_ga=True):
+def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard", name_fig="daily_total", apply_prof_smooting=False):
     """this function creates the Hovmoller relative to a selected, or more selected floats devices"""
+    #sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.1, color_codes=True, rc=None)
     #part 1: creation of the tensor
-    Hovmoller_tensor = torch.zeros(list_week_tensors[0].shape[2], len(list_week_tensors))
+    Hovmoller_tensor = float_device_tensor
+    if tensor_order == "standard":
+        Hovmoller_tensor = float_device_tensor
+    elif tensor_order == "LEV_order":
+        Hovmoller_tensor = torch.cat((float_device_tensor[:, 46:52], float_device_tensor[:, :46]), axis = 1)
+        print("shape hovmoller tensro Lev", Hovmoller_tensor.shape)
+    elif tensor_order == "NWM_order":
+        Hovmoller_tensor = torch.cat((float_device_tensor[:, 28:52], float_device_tensor[:, :27]), axis=1)
+        print("shape hovmoller tensro NWM", Hovmoller_tensor.shape)
+    if apply_prof_smooting == True:
+        for i in range(Hovmoller_tensor.shape[1]):
+            Hovmoller_tensor[:, i] = torch.from_numpy(moving_average(Hovmoller_tensor[:,i].detach().cpu().numpy(), 3))
     #part 2: plot the tensor
-    fig, axs = plt.subplots(1, figsize=(9, 4))  #Prima era (14,6)
+    fig, axs = plt.subplots(1, figsize=(8,6)) 
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
     plt.grid(False)
-    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.45,cmap=cmap,aspect='auto')  #in questo modo dovrei stampare fino a 200 metri
+    print(Hovmoller_tensor[:20, 13])
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax = 0.60, cmap=cmap,aspect='auto')  #vmax =torch.quantile(Hovmoller_tensor[-20:, :], 0.95, interpolation="linear")
     plt.colorbar(im, shrink=0.9, pad=0.05)
-    x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
-    axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
+    #x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
+    #axs.set_xticks(np.arange(0, Hovmoller_tensor.shape[1], 13), x_ticks_labels, rotation=45)
     #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
     axs.set_ylabel(r"depth [$m$]")
@@ -456,5 +469,5 @@ def plot_Hovmoller_real_float(list_selected_float, path_job, list_masks, var, pa
     path_plots_hov = path_plots + "/hovmoller"
     if not os.path.exists(path_plots_hov):
         os.makedirs(path_plots_hov)
-    plt.savefig(path_plots_hov + "/hovmoller_float_oct_sept_" + str(ga) +".png", dpi=100)
+    plt.savefig(path_plots_hov + "/hovmoller_float_" + str(name_fig) + "_" + str(ga) +".png", dpi=100)
     return None

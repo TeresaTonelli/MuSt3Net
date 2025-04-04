@@ -10,7 +10,7 @@
 
 #SBATCH --output=biogeoch_float_data_gen.%j
 
-#SBATCH --account=OGS23_PRACE_IT_0
+#SBATCH --account=IscrC_MEDConNN
 #SBATCH --job-name=job_float_biogeoch
 
 #SBATCH --cpus-per-task=1

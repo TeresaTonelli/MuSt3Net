@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=00:00:40
+#SBATCH --time=00:00:19
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=16G
+#SBATCH --mem=4G
 #SBATCH --partition=boost_usr_prod
 
-#SBATCH --output=plot_st.%j
+#SBATCH --output=test_float_plots.%j
 
 #SBATCH --account=IscrC_MEDConNN
-#SBATCH --job-name=job_plot_st
+#SBATCH --job-name=job_test_plots
 
 #SBATCH --cpus-per-task=1
 
 
-
-module load python 
+module load python
 source ~/.bashrc
 module load anaconda3
 conda activate ocean
 
-python plot_save_tensor.py
+python test_plot_results_float.py

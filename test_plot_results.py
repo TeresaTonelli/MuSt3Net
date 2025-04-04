@@ -9,11 +9,11 @@ import seaborn as sns
 
 from convolutional_network import CompletionN
 from hyperparameter import *
-from normalization import Normalization, tmp_Normalization
+from normalization import Normalization, tmp_Normalization, tmp_Normalization_float
 from utils_function import compute_profile_coordinates
 from utils_generation_train_1p import read_list, write_list
 from utils_training_1 import load_tensors, load_land_sea_masks, load_old_total_tensor, load_transp_lat_coordinates, re_load_float_input_data, re_load_float_input_data_external
-from plot_results_final import plot_NN_maps_final_1, plot_NN_maps_final_2, plot_models_profiles_1, plot_models_profiles_2, plot_BFM_maps, plot_Hovmoller
+from plot_results_final import plot_NN_maps_final_1, plot_NN_maps_final_2, plot_models_profiles_1, plot_models_profiles_2, plot_BFM_maps, plot_Hovmoller, plot_Hovmoller_real_float
 from plot_results import plot_NN_maps
 
 
@@ -251,20 +251,43 @@ elif prob_statement == "hovmoller_external":
     if not os.path.exists(path_fig_channel_2):
         os.makedirs(path_fig_channel_2)
     list_wd_2022_phys = [(2022, i) for i in range(1, 53)]
-    list_yw_2023 = [(2023, i) for i in range(1, 53)]
-    list_week_tensors_2023 = re_load_float_input_data_external("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", list_yw_2023, list_wd_2022_phys)
+    list_yw_2022 = [(2022, i) for i in range(1, 53)] 
+    list_wd_2023_phys = [(2023, i) for i in range(1, 41)]
+    list_yw_2023 = [(2023, i) for i in range(1, 41)]
+    list_week_tensors_2022 = re_load_float_input_data_external("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", list_yw_2022, list_wd_2022_phys)
+    list_week_tensors_2023 = re_load_float_input_data_external("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset", list_yw_2023, list_wd_2023_phys)
     print("list 2023", len(list_week_tensors_2023), flush=True)
-    list_week_tensors = list_week_tensors_2023 
+    list_week_tensors = list_week_tensors_2022[41:] + list_week_tensors_2023[:41] 
     del list_week_tensors_2023
     print("list week tensors", len(list_week_tensors), flush=True)
     list_week_tensors_norm = tmp_Normalization(list_week_tensors, "2p", path_mean_std_2)
     list_week_tensors_BFM = [torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", 0, [(2019, i, 2)])[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1) for i in range(1, 53)]
     print(np.arange(0, len(list_week_tensors), 13), flush=True)
-    list_week_tensors_norm_reverse = list_week_tensors_norm[40:] + list_week_tensors_norm[:40]
-    print("len reverse list", len(list_week_tensors_norm_reverse))
+    #list_week_tensors_norm_reverse = list_week_tensors_norm[40:] + list_week_tensors_norm[:40]
+    #print("len reverse list", len(list_week_tensors_norm_reverse))
 
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "NWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
+    plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "NWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
     #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "SWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
     #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "TYR", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
     #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "ION", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    plot_Hovmoller(list_week_tensors_norm_reverse, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "LEV", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
+    plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "LEV", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
+
+
+elif prob_statement == "hovmoller_float":
+    total_float_tensor = torch.load("total_float_tensor.pt")
+    path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-14 10:05:14.974986"
+    path_results_2 = path_job + "/results_training_2_ensemble"
+    list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+    path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
+    path_fig_channel_2 = path_results_2 + "/P_l/20/lrc_0.001/plots_2_final"
+    if not os.path.exists(path_fig_channel_2):
+        os.makedirs(path_fig_channel_2)
+    float_device_tensor_LEV = torch.load("weekly_LEV_mean_float_tensor.pt")
+    #float_device_tensor_LEV = tmp_Normalization_float(float_device_tensor_LEV, "2p", path_mean_std_2, [444, 48])
+    float_device_tensor_NWM = torch.load("weekly_NWM_5906990_mean_float_tensor.pt")
+    print(float_device_tensor_NWM[:, 1])
+    #float_device_tensor_NWM = tmp_Normalization_float(float_device_tensor_NWM, "2p", path_mean_std_2, [139, 153])
+    print(float_device_tensor_NWM[:, 1])
+    plot_Hovmoller_real_float(total_float_tensor, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard")
+    #plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order")
+    plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="NWM_order")

@@ -11,6 +11,8 @@ plots/
 dataset/
 dataset_training/
 total_float_tensor.pt
+*.pt
+float_plots/
 
 results_job_*
 
@@ -35,6 +37,7 @@ open_npy_*
 open_npy.1*
 open_pt*
 plot_st.1*
+test_float_plots.1*
 
 #images
 *.png

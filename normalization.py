@@ -52,6 +52,18 @@ def tmp_Normalization(list_tensor, phase, mean_std_directory):
     return normalized_list
 
 
+
+def tmp_Normalization_float(tensor, phase, mean_std_directory, my_coord):
+    print("tensro shape", tensor.shape)
+    mean_tensor = torch.squeeze(torch.load(mean_std_directory + "/mean_tensor.pt")[:, -1, :, :, :])
+    print("mean tensor shape", mean_tensor.shape, flush=True)
+    std_tensor = torch.squeeze(torch.load(mean_std_directory + "/std_tensor.pt")[:, -1, :, :, :])
+    print("shape std", std_tensor.shape)
+    norm_tensor = (tensor - mean_tensor) / std_tensor   #qua forse alucne divisioni per 0 generano i nan values
+    print("norm tensor shape", norm_tensor.shape)
+    norm_tensor = norm_tensor.float()
+    return norm_tensor
+
 def Normalization_Float(list_tensor, mean_tensor, std_tensor):
     """
     normalization routine for FLOAT data

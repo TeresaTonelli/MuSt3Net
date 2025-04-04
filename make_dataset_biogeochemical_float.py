@@ -120,6 +120,64 @@ def dictionary_float_vars_names(list_biogeoch_vars):
 
 
 
+def compute_index_mean(list_data_float, list_datetime):
+  """this function computes the list of indexes that refers to the same float device and the same week"""
+  list_devices = [data.split("/", 1)[0] for data in list_data_float]
+  list_weeks = [read_date_time_sat(datet) for datet in list_datetime] 
+  list_couples = list(zip(list_devices, list_weeks))
+  unique_couples = []
+  seen = set()
+  for item in list_couples:
+    if item not in seen:
+        unique_couples.append(item)
+        seen.add(item)
+  indexes_mean = [list() for i in range(len(unique_couples))]
+  for i_u in range(len(unique_couples)):
+     for i_l in range(len(list_couples)):
+        if unique_couples[i_u] == list_couples[i_l]:
+          indexes_mean[i_u].append(i_l)
+  return unique_couples, indexes_mean 
+
+
+def compute_float_mean(total_float_tensor, unique_couples, indexes_mean):
+  """this function takes the total float daily profiles and compute the mean between weeks and among the same float"""
+  weekly_mean_float_tensor = torch.zeros([d, len(unique_couples)])
+  for i in range(len(unique_couples)):
+    tmp_tensor = torch.stack([total_float_tensor[:,j] for j in indexes_mean[i]], dim= 1)
+    single_mean_tensor = torch.mean(tmp_tensor, axis=1)
+    weekly_mean_float_tensor[:,i] = single_mean_tensor
+  return unique_couples, weekly_mean_float_tensor
+  
+
+def compute_float_mean_no_0(total_float_tensor, unique_couples, indexes_mean):
+  """this function takes the total float daily profiles and compute the mean between weeks and among the same float"""
+  indexes_mean_no_0 = []
+  unique_couples_no_0 = []  
+  weekly_mean_float_tensor = torch.zeros([d, len(unique_couples)])
+  for i in range(len(unique_couples)):
+    indexes_no_0 = [indexes_mean[i][j] for j in range(len(indexes_mean[i])) if torch.count_nonzero(total_float_tensor[:, indexes_mean[i][j]]) > 0]
+    print("indexes", indexes_no_0)
+    if len(indexes_no_0) == 0:
+      print("i", i)
+      print("indexes no 0", indexes_mean[i])
+      print("unique couple", unique_couples[i])
+      continue
+    tmp_tensor = torch.stack([total_float_tensor[:,j] for j in indexes_no_0], dim= 1)
+    single_mean_tensor = torch.mean(tmp_tensor, axis=1)
+    weekly_mean_float_tensor[:,i] = single_mean_tensor
+    indexes_mean_no_0.append(indexes_no_0)
+    unique_couples_no_0.append(unique_couples[i])
+  return unique_couples, weekly_mean_float_tensor[:, :len(indexes_mean_no_0)]
+
+
+def search_corresponding_date_weeks(single_float_device, unique_couples):
+   """this function computes the list of weeks whose measures are registered by a specific float device"""
+   list_week_measured = []
+   for couple in unique_couples:
+      if couple[0] == single_float_device:
+         list_week_measured.append(couple[1])
+   return list_week_measured
+
 
 def insert_float_values(lat_limits, lon_limits, depth_limits, year_limits, resolution, list_data_times, dict_list_parallelepiped_vars, list_float_vars):
     """
@@ -242,7 +300,7 @@ def insert_float_values(lat_limits, lon_limits, depth_limits, year_limits, resol
 t = 't'
 w = 'w'
 
-kindof = "float_hov_2"
+kindof = "float_hov_single_float"
 
 if kindof == "float_start":
    for i in range(1):
@@ -350,16 +408,86 @@ if kindof == "float_hov":
             if  dict_variables_domain["P_l"][0]< biog_var_v < dict_variables_domain["P_l"][1]:
               float_tensor[depth_index] = biog_var_v
         total_float_tensor[:, i] = float_tensor
-  torch.save(total_float_tensor, "total_float_tensor.pt")
+  #torch.save(total_float_tensor, "total_float_tensor.pt")
 
 if kindof == "float_hov_2":
-  total_float_tensor = torch.load("total_float_tensor.pt")
-  print("total float tensor shape", total_float_tensor.shape)
-  list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
-  print("list data", list_data)
-  list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
-  weeks = [read_date_time_sat(datet) for datet in list_datetime]   
-  print("weeks", weeks)
-  float_devices = [data.split("/", 1)[0] for data in list_data]
-  print("float_devices", float_devices)
+  #total_float_tensor = torch.load("total_float_tensor.pt")
+  #print("total float tensor shape", total_float_tensor.shape)
+  #list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
+  #print("list data", list_data)
+  #list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
+  #weeks = [read_date_time_sat(datet) for datet in list_datetime]   
+  #print("weeks", weeks)
+  #float_devices = [data.split("/", 1)[0] for data in list_data]
+  #print("float_devices", float_devices)
   #adesso devo fare la media sulle settimane --> devo fare la media se ho stessa settimana e stesso float
+  #my_float = "3738"
+  #for week in weeks:
+  #   mean_float_tensor = torch.mean()
+  total_float_tensor = torch.load("total_float_tensor.pt")
+  list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
+  list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
+  unique_couples, indexes_mean = compute_index_mean(list_data, list_datetime)
+  print("unique couples", unique_couples)
+  print("indexes mean", indexes_mean)
+  unique_couples, weekly_mean_float_tensor = compute_float_mean(total_float_tensor, unique_couples, indexes_mean)
+  print("unique couples", unique_couples)
+  print("weekly float tensor", weekly_mean_float_tensor[:, 0])
+  #torch.save(weekly_mean_float_tensor, "weekly_mean_float_tensor_no_0.pt")
+
+
+if kindof == "float_hov_3":
+   list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
+   list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
+   list_data_floats = [data.split("/", 1)[0] for data in list_data]
+   unique_couples, indexes_mean = compute_index_mean(list_data, list_datetime)
+   print("unique couples", unique_couples)
+   print("indexes mean", indexes_mean)
+   for single_float_device in set(list(unique_couples[j][0] for j in range(len(unique_couples)))):
+    print("single float device", single_float_device)
+    list_weeks = search_corresponding_date_weeks(single_float_device, unique_couples)
+    print("list weeks", list_weeks)
+
+
+if kindof == "float_hov_single_float":
+  list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
+  list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
+  list_data_floats = [data.split("/", 1)[0] for data in list_data]
+  unique_couples, indexes_mean = compute_index_mean(list_data, list_datetime)
+  total_float_tensor = torch.load("total_float_tensor.pt")
+  counter_no_float = 0
+  for i in range(total_float_tensor.shape[1]):
+     if torch.count_nonzero(total_float_tensor[:,i]).item() == 0:
+        #print("i void", i)
+        counter_no_float += 1
+  print("counter", counter_no_float)
+  week_total_float = torch.load("weekly_mean_float_tensor_no_0.pt")
+  #print("shape weekly mean floats", week_total_float.shape)
+  counter_no_float_week = 0
+  counter_nan_week = 0
+  for i in range(week_total_float.shape[1]):
+    if torch.count_nonzero(week_total_float[:,i]).item() == 0:
+      #print("i void", i)
+      counter_no_float_week += 1
+    if torch.isnan(week_total_float[:,i]).any():
+      #print("i nan", i)
+      #print('unique couple i', unique_couples[i])
+      counter_nan_week += 1
+  print("counter", counter_no_float_week)
+  print("counter nan week", counter_nan_week)
+  list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()
+  list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()
+  float_devices = [data.split("/", 1)[0] for data in list_data]
+  print("indexes float 5906990", [i for i, x in enumerate(float_devices) if x == "5906990"])
+  list_data = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 0].tolist()[422:492]
+  print("list data", list_data)
+  list_datetime = pd.read_csv(float_path + '/Float_2022_Index.txt', header=None).to_numpy()[:, 3].tolist()[422:492]
+  unique_couples, indexes_mean = compute_index_mean(list_data, list_datetime)
+  print("unique couples", unique_couples)
+  print("indexes mean", indexes_mean)
+  unique_couples, weekly_single_mean_float_tensor = compute_float_mean_no_0(total_float_tensor, unique_couples, indexes_mean)
+  print("weekly float tensor", weekly_single_mean_float_tensor[:, 0])
+  print(weekly_single_mean_float_tensor.shape)
+  print(week_total_float.shape)
+  print(torch.equal(weekly_single_mean_float_tensor, week_total_float[:, :73]))
+  torch.save(weekly_single_mean_float_tensor, "weekly_NWM_5906990_mean_float_tensor_no_0.pt")
