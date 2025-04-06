@@ -438,7 +438,7 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
 
 def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard", name_fig="daily_total", apply_prof_smooting=False):
     """this function creates the Hovmoller relative to a selected, or more selected floats devices"""
-    #sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.1, color_codes=True, rc=None)
+    sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.1, color_codes=True, rc=None)
     #part 1: creation of the tensor
     Hovmoller_tensor = float_device_tensor
     if tensor_order == "standard":
@@ -447,21 +447,24 @@ def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=Fa
         Hovmoller_tensor = torch.cat((float_device_tensor[:, 46:52], float_device_tensor[:, :46]), axis = 1)
         print("shape hovmoller tensro Lev", Hovmoller_tensor.shape)
     elif tensor_order == "NWM_order":
-        Hovmoller_tensor = torch.cat((float_device_tensor[:, 28:52], float_device_tensor[:, :27]), axis=1)
+        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292],float_device_tensor[:, 265:275], float_device_tensor[:, 479:483], float_device_tensor[:, 275:290], float_device_tensor[:, 483:486]), axis=1)
+        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], + float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 275:276], float_device_tensor[:, 288:290], float_device_tensor[:, 279:287], float_device_tensor[:, 274:275], float_device_tensor[:, 479:483], float_device_tensor[:, 276:277]), axis=1)
+        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 100:103], float_device_tensor[:, 475:477], float_device_tensor[:, 90:96], float_device_tensor[:, 97:100]), axis=1)
+        Hovmoller_tensor = torch.cat((float_device_tensor[:, 108:111], float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 90:96], float_device_tensor[:, 97:99], float_device_tensor[:, 102:108]), axis=1)
         print("shape hovmoller tensro NWM", Hovmoller_tensor.shape)
     if apply_prof_smooting == True:
         for i in range(Hovmoller_tensor.shape[1]):
-            Hovmoller_tensor[:, i] = torch.from_numpy(moving_average(Hovmoller_tensor[:,i].detach().cpu().numpy(), 3))
+            Hovmoller_tensor[:, i] = torch.from_numpy(moving_average(Hovmoller_tensor[:,i].detach().cpu().numpy(), 5))
     #part 2: plot the tensor
     fig, axs = plt.subplots(1, figsize=(8,6)) 
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
     plt.grid(False)
     print(Hovmoller_tensor[:20, 13])
-    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax = 0.60, cmap=cmap,aspect='auto')  #vmax =torch.quantile(Hovmoller_tensor[-20:, :], 0.95, interpolation="linear")
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax = 0.40, cmap=cmap,aspect='auto')  #vmax =torch.quantile(Hovmoller_tensor[-20:, :], 0.95, interpolation="linear")
     plt.colorbar(im, shrink=0.9, pad=0.05)
-    #x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
-    #axs.set_xticks(np.arange(0, Hovmoller_tensor.shape[1], 13), x_ticks_labels, rotation=45)
+    x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
+    axs.set_xticks(np.arange(0, Hovmoller_tensor.shape[1], 13), x_ticks_labels, rotation=45)
     #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
     axs.set_ylabel(r"depth [$m$]")
@@ -469,5 +472,5 @@ def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=Fa
     path_plots_hov = path_plots + "/hovmoller"
     if not os.path.exists(path_plots_hov):
         os.makedirs(path_plots_hov)
-    plt.savefig(path_plots_hov + "/hovmoller_float_" + str(name_fig) + "_" + str(ga) +".png", dpi=100)
+    plt.savefig(path_plots_hov + "/hovmoller_float_" + str(name_fig) + "_" + str(ga) +".png", dpi=600)
     return None

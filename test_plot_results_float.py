@@ -38,7 +38,7 @@ if prob_statement == "hovmoller_float":
     path_images = "float_plots/weekly_total/"
     if not os.path.exists(path_images):
         os.makedirs(path_images)
-    for i in range(73):
+    for i in range(250, 280):
         plt.plot(torch.squeeze(weekly_total_float_tensor[:, i]).flip(0), np.arange(0, 31), linewidth=2.0)
         plt.savefig(path_images + str(i) + ".png", dpi=100)
         plt.close()
@@ -73,5 +73,5 @@ if prob_statement == "hovmoller_float":
     weekly_total_float_tensor_no_0 = torch.load("weekly_mean_float_tensor_no_0.pt")
     #float_device_tensor_NWM = tmp_Normalization_float(float_device_tensor_NWM, "2p", path_mean_std_2, [139, 153])
     #plot_Hovmoller_real_float(weekly_total_float_tensor_no_0, path_fig_channel_2, "MED", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard", name_fig="weekly_total_no_0")
-    #plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order", name_fig="weekly_no_0_final", apply_prof_smooting=True)
-    plot_Hovmoller_real_float(weekly_total_float_tensor_no_0[:, 261:301], path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard", name_fig="weekly_no_0_", apply_prof_smooting=False)
+    #plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order", name_fig="weekly_no_0_final_sept_aug", apply_prof_smooting=True)
+    plot_Hovmoller_real_float(weekly_total_float_tensor_no_0, path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="NWM_order", name_fig="weekly_no_0_final_oct_sept_ls", apply_prof_smooting=True)
