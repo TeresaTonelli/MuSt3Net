@@ -12,8 +12,8 @@ class CompletionN(nn.Module):
     def __init__(self):
         super(CompletionN, self).__init__()
 
-        self.conv1 = nn.Conv3d(in_channels, 9, kernel_size=(3,3,3), stride=1, padding=1)    #OSS: se mi da errore sul kernel size, devo mettere solo 3x3x3
-        self.bn1 = nn.BatchNorm3d(9)                             #OSS: non penso volgia la normalizzazione nel paper originale, ma per ora la lascio
+        self.conv1 = nn.Conv3d(in_channels, 9, kernel_size=(3,3,3), stride=1, padding=1)    
+        self.bn1 = nn.BatchNorm3d(9)                           
         self.af1 = nn.ReLU()
         self.do1 = nn.Dropout(0.15)
 
@@ -38,10 +38,7 @@ class CompletionN(nn.Module):
         self.do5 = nn.Dropout(0.15)
 
         self.conv6 = nn.Conv3d(128, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1)
-        #self.conv6 = nn.ConvTranspose3d(128, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1)
-        #self.af6 = nn.ReLU()    # --> torglierla perchè tipicamente non si chiude con una ReLU
 
-        #self.dropout = nn.Dropout(0.15)    #aggiunto dopo, da controllare se funziona   #metterlo dopo ognuno 
 
     def forward(self, x):
         x = self.bn1(self.af1(self.conv1(x)))
@@ -54,7 +51,6 @@ class CompletionN(nn.Module):
         x = self.do4(x)
         x = self.bn5(self.af5(self.conv5(x)))
         x = self.do5(x)
-        #x = self.af6(self.conv6(x))
         x = self.conv6(x)
 
         return x

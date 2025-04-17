@@ -5,6 +5,7 @@ old_git/
 checks_open_scripts/
 not_used_scripts/
 old_scripts/
+script_to_remove_from_github/
 
 plots/
 

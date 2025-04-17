@@ -8,11 +8,9 @@ from hyperparameter import *
 import numpy as np
 import torch
 
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#print("device", device)
 
 def MV_pixel(train_dataset, number_channel=number_channel):
-    channel_total_mean = torch.zeros(size=(number_channel,))     #.to(device)   
+    channel_total_mean = torch.zeros(size=(number_channel,))       
     for train_tensor in train_dataset:
         tensor_mean = train_tensor.mean(axis=(0, 2, 3, 4))      
         channel_total_mean = channel_total_mean + tensor_mean
@@ -21,7 +19,7 @@ def MV_pixel(train_dataset, number_channel=number_channel):
 
 
 def std_pixel(train_dataset, number_channel=number_channel):
-    channel_total_std = torch.zeros(size=(number_channel,))     #.to(device)     
+    channel_total_std = torch.zeros(size=(number_channel,))     
     for train_tensor in train_dataset:
         tensor_std = train_tensor.std(axis=(0, 2, 3, 4))       
         channel_total_std = channel_total_std + tensor_std
