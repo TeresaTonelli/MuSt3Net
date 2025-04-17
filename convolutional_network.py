@@ -4,8 +4,8 @@ definition of the COMPLETION NETWORK (fully CNN) that compose the architecture
 import torch.nn as nn
 from hyperparameter import *
 
-in_channels = number_channel  #number_channel + 1  # number of channels of the input + channel of the mask
-out_channels = 1   #SECONDO ME QUA IO DEVO AVERE SOLO LA VARIABILE BIOGEOCH    #in_channels - 1  # same channels of the input except for the mask channel
+in_channels = number_channel  
+out_channels = 1   
 
 
 class CompletionN(nn.Module):
