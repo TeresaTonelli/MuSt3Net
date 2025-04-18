@@ -10,10 +10,9 @@ from hyperparameter import *
 
 
 
-
 def tensor_sample(tensor, k):
     """this function select k elemnt from a tensor and recreate a copy of the original tensor which contains only those elements"""
-    depths_index_range = tensor.shape[2]   #in caso questti indici potrebbero essere da cambiare
+    depths_index_range = tensor.shape[2]   
     longitudes_index_range = tensor.shape[3]
     latitudes_index_range = tensor.shape[4]
     sampled_coordinates_depths = random.sample(range(depths_index_range), k)
@@ -30,17 +29,10 @@ def tensor_mask_sample(tensor, mask, k):
     """this function select k elemnt from a tensor and recreate a copy of the original tensor which contains only those elements, sampling only sea data"""
     longitudes_index_range = tensor.shape[3]
     latitudes_index_range = tensor.shape[4]
-    #sea_coordinates = [[i_h, i_w] for i_h, i_w in zip(range(longitudes_index_range), range(latitudes_index_range)) if mask[:, :, :, i_h, i_w] == 1 ]   #DA CONTROLLARE
     couple_coordinates = itertools.product(range(longitudes_index_range), range(latitudes_index_range))  
     sea_coordinates = [couple_coordinate for couple_coordinate in couple_coordinates if mask[:, :, :, couple_coordinate[0], couple_coordinate[1]] == 1.0]
-    #print("len sea corridndate", len(sea_coordinates))
-    #print("count sea corrdinates", [torch.count_nonzero(tensor[:, :, :, sea_coordinate[0], sea_coordinate[1]]) for sea_coordinate in sea_coordinates])
     deep_sea_coordinates = [sea_coordinate for sea_coordinate in sea_coordinates if torch.count_nonzero(tensor[:, :, :, sea_coordinate[0], sea_coordinate[1]]) > deep_sea_good_count]
-    #print("deep sea corrdinates", deep_sea_coordinates[0])
-    #print("k", k)
-    sampled_coordinates = random.sample(deep_sea_coordinates, k)    #prima era solo sea_coordinates
-    #print("sampled coordinates", sampled_coordinates)
-    #reduced_tensor = np.zeros([batch, number_channel_biogeoch, tensor.shape[2], tensor.shape[3], tensor.shape[4]])
+    sampled_coordinates = random.sample(deep_sea_coordinates, k)  
     reduced_tensor = torch.zeros(batch, number_channel_biogeoch, tensor.shape[2], tensor.shape[3], tensor.shape[4])
     for i in range(k):
         reduced_tensor[:, :, :, sampled_coordinates[i][0], sampled_coordinates[i][1]] = tensor[:, :, :, sampled_coordinates[i][0], sampled_coordinates[i][1]]
@@ -55,14 +47,10 @@ def tensor_mask_ngh_sample(tensor, mask, r):
     sea_coordinates = [couple_coordinate for couple_coordinate in couple_coordinates if mask[:, :, :, couple_coordinate[0], couple_coordinate[1]] == 1.0]
     sampled_coordinate = random.sample(sea_coordinates, 1)
     sampled_coordinates = [[sampled_coordinate[0][0] - i, sampled_coordinate[0][1] - j] for i, j in itertools.product(range(-r, r), range(-r, r))]
-    #print("len sampled_coordinates", len(sampled_coordinates))
-    #print("sampled_coordinates", sampled_coordinates)
     #remove cooridnates which lies outside the domain of the figure
     for coordinates in sampled_coordinates[::-1]:
         if coordinates[0] not in range(0, h) or coordinates[1] not in range(0, w):
             sampled_coordinates.remove(coordinates)
-    #print("len sampled coordinates after", len(sampled_coordinates))
-    #print("sampled_coordinates after", sampled_coordinates)
     reduced_tensor = torch.zeros(batch, number_channel_biogeoch, tensor.shape[2], tensor.shape[3], tensor.shape[4])
     for i in range(len(sampled_coordinates)):
         reduced_tensor[:, :, :, sampled_coordinates[i][0], sampled_coordinates[i][1]] = tensor[:, :, :, sampled_coordinates[i][0], sampled_coordinates[i][1]]
@@ -90,13 +78,11 @@ def generate_list_sample_tensors(list_tensors, mask, k, m):
     return list_sample_tensors, list_sample_coordinates
 
 
-
-
 def fill_tensor_with_standard(tensor, list_mask, standard_value):
     """fill missing value of the tensor with a standard mean value of the variable contained in the tensor"""
     for i_0 in range(tensor.shape[0]):
         for i_1 in range(tensor.shape[1]):
-            for i_2 in range(tensor.shape[2] - 1):   #FORSE, PERCHE AVEVO TOLOT L'ULTIMA DEPTH NEL GET LIST MODEL TENSOR
+            for i_2 in range(tensor.shape[2] - 1):   
                 for i_3 in range(tensor.shape[3]):
                     for i_4 in range(tensor.shape[4]):
                         if tensor[i_0, i_1, i_2, i_3, i_4] == 0.0 and list_mask[i_2][i_0, i_1, 0, i_3, i_4] == 1.0:
@@ -118,9 +104,7 @@ def compute_profile_coordinates(tensor):
     latitude_indexes = np.arange(0, tensor.shape[4])
     for latitude_index in latitude_indexes:
         for longitude_index in longitude_indexes:
-            #print(latitude_index, longitude_index)
             profile_tensor_float = tensor[0, 0, :, longitude_index, latitude_index] 
-            #print(profile_tensor_float.shape)
             if torch.sum(profile_tensor_float) != 0.0:
                 list_coordinates_tensor.append((longitude_index, latitude_index))
     return list_coordinates_tensor
@@ -129,7 +113,6 @@ def compute_profile_coordinates(tensor):
 
 def generate_sampled_profiles_tensor(original_tensor, sampled_float_prof_coord):
     """given a list of coordinates, it creates a new tensor that contains values of original tensor only for these coordinates"""
-    """"QUESTA FUNZIONE DEVE PER FORZA AVERE UN TENSORE DI RIFERIMENTO, SE NO NON SO CHE DATI INSERIRE NEL TENSORE NUOVO"""
     tensor = torch.zeros(original_tensor.shape[0], original_tensor.shape[1], original_tensor.shape[2], original_tensor.shape[3], original_tensor.shape[4])
     for coord in sampled_float_prof_coord:
         tensor[:, :, :, coord[0], coord[1]] = original_tensor[:, :, :, coord[0], coord[1]]
@@ -195,17 +178,9 @@ def compute_mean_layers(my_tensor, my_list_layers, n_dim, my_size):
     my_tensor_mean_layers = torch.zeros(size=my_size)
     for j in range(len(my_list_layers)-1):
         ind_min, ind_max = compute_indexes_from_depths([my_list_layers[j], my_list_layers[j+1]], depth_resolution=resolution[2])
-        #print("ind min, ind max", [ind_min, ind_max])
-        #print("my size", my_size)
         dim_list = list(my_size)
-        #print("dim list", dim_list)
         dim_list.pop(n_dim)
-        #print("dim list", dim_list)
         dim_tuple = tuple(dim_list)
-        #print("torch sum after mean", torch.sum(torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim)), flush=True)
-        #print("shape mean tensor", torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).shape, flush=True)
-        #print("shape mean unsqueeze tensor", torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).unsqueeze(n_dim).shape, flush=True)
-        #print("shape tensor mean layers", my_tensor_mean_layers[:, :, j, :, :].shape, flush=True)
         my_tensor_mean_layers[:, :, j, :, :] = torch.mean(my_tensor[:, :, ind_min:ind_max, :, :], n_dim).unsqueeze(n_dim)
     return my_tensor_mean_layers
 
@@ -221,18 +196,12 @@ def compute_profile_mean(my_tensor, index_dim, list_to_plot_coordinates):
     return tensor_float_coord
 
 
-
 def find_index_week(list_tensor, iw):
-    print("list tensor", list_tensor)
     for week_data in list_tensor:
         week = "".join(c for c in week_data if c.isdecimal())
         if int(week) == iw:
             wd_index = list_tensor.index(week_data)
-            print("wd index", wd_index)
     return wd_index
-
-
-
 
 
 def concatenate_physics_tensor(path_directory_physics_tensor):
@@ -240,22 +209,16 @@ def concatenate_physics_tensor(path_directory_physics_tensor):
     list_directory_physics_tensor = [os.listdir(path_directory_physics_tensor[i]) for i in range(len(path_directory_physics_tensor))]
     concatenate_tensors = []
     n_week = len(list_directory_physics_tensor[0])
-    #print("n week", n_week)
     for iw in range(1, n_week + 1):
-        #print("iw", iw)
         index = find_index_week(list_directory_physics_tensor[0], iw)
-        my_tensor = torch.load(path_directory_physics_tensor[0] + list_directory_physics_tensor[0][index])  #list_directory_physics_tensor[0][index]
+        my_tensor = torch.load(path_directory_physics_tensor[0] + list_directory_physics_tensor[0][index])  
         for i in range(1, len(list_directory_physics_tensor)):
             new_index = find_index_week(list_directory_physics_tensor[i], iw)
             week_tensor = torch.load(path_directory_physics_tensor[i] + list_directory_physics_tensor[i][new_index])
-            my_tensor = torch.cat((my_tensor, week_tensor), axis=1)    #da controllare
-            #print("equality", torch.equal(week_tensor, torch.unsqueeze(my_tensor[:, i, :, :, :], 0)))
-            #print("my tensor shape", my_tensor[:, i, :, :, :].shape)
-            #print("week tensor shape", week_tensor.shape)
+            my_tensor = torch.cat((my_tensor, week_tensor), axis=1)    
         concatenate_tensors.append(my_tensor)
         torch.save(my_tensor, os.getcwd() + "/dataset/MODEL/2022/final_tensor/" + "datetime_" + str(iw) + ".pt")  
     return concatenate_tensors
-
 
 
 def re_order_weeks(list_weeks, list_tensor):
@@ -265,8 +228,6 @@ def re_order_weeks(list_weeks, list_tensor):
         index_week = list_weeks.index(str(i))
         list_order_tensor[i-1] = list_tensor[index_week]
     return list_order_tensor, [str(j) for j in range(1, n+1)]
-
-
 
 
 def sort_depths_old(list_depths):
@@ -280,14 +241,12 @@ def sort_depths_old(list_depths):
     return sorted_list_depths
 
 
-
 def compute_season(week):
     """this function identifies if a data refers to summer or winter season"""
     if week < 14:
         return "winter"
     else: 
         return "summer"
-
 
 
 def transform_latitudes_longitudes(lat_long_indexes):
