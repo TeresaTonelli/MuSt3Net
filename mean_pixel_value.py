@@ -1,7 +1,7 @@
 """
 Function that compute the mean/std value of the pixels of the training set
-I : train_dataset i.e. a list of 4 channel tensor
-O : channel_total_mean i.e. a numpy array containing the mean along the channel values of the input training set
+Input : train_dataset i.e. a list of 4 channel tensor
+Output : channel_total_mean i.e. a numpy array containing the mean along the channel values of the input training set
 Implementation for a problem with 4 channel to estimate
 """
 from hyperparameter import *

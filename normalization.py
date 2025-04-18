@@ -2,7 +2,6 @@
 Normalization function that must be applied before proceeding with the training
 bc the values of the unknown we want to estimate are way higher than 1
 """
-
 import os
 import torch 
 from hyperparameter import *

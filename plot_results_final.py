@@ -19,13 +19,12 @@ from utils_function import compute_mean_layers, compute_profile_mean
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
 sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=1.0, color_codes=True, rc=None)
 
 
 def moving_average(data, window_size):
     if window_size % 2 == 0:
-        window_size += 1  # Ensure window size is odd for symmetry
+        window_size += 1  
     pad_size = window_size // 2
     padded_data = np.pad(data, pad_size, mode='edge')
     cumsum_vec = np.cumsum(np.insert(padded_data, 0, 0))
@@ -47,13 +46,13 @@ def compute_cmap(string_colormap):
     elif string_colormap == 'viridis':
         jet = plt.get_cmap('viridis')
     newcolors = jet(np.linspace(0, 1, 256))
-    newcolors[0, :] = np.array([1, 1, 1, 1])  # RGBA for white
+    newcolors[0, :] = np.array([1, 1, 1, 1])  
     newcmap = ListedColormap(newcolors)
     return newcmap
 
 
 def plot_BFM_maps(BFM_tensor, list_masks, var, path_fig_channel, list_layers):
-    """function that plot the mean computed on different layer of the NN output"""
+    """function that plot the tensor resulted from the BFM"""
     sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.0, color_codes=True, rc=None)
     channel = compute_channel(var)
     masked_NN_tensor = apply_masks(BFM_tensor, list_masks)
@@ -67,10 +66,8 @@ def plot_BFM_maps(BFM_tensor, list_masks, var, path_fig_channel, list_layers):
         cmap = plt.get_cmap("jet")   
         newcmap = compute_cmap('jet')
         depth_level = list_layers[layers_level] // resolution[2]
-        print("depth level", depth_level)
-        print("color range BFM", [parameters_plots[var][0][depth_level], parameters_plots[var][1][depth_level]])
         plt.imshow(plot_tensor[0, channel, layers_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][depth_level], vmax = parameters_plots[var][1][depth_level], interpolation='spline16')    
-        #plt.colorbar(shrink=0.6, pad=0.01)
+        plt.colorbar(shrink=0.6, pad=0.01)
         my_xticks= np.arange(0, h, 70)
         my_yticks = np.arange(0, w, 65)
         my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 70)])
@@ -85,7 +82,7 @@ def plot_BFM_maps(BFM_tensor, list_masks, var, path_fig_channel, list_layers):
 
 
 def plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, var, path_mean_std, path_fig_channel, mean_layer=False, list_layers = []):
-    """function that plot the tensor resulted from the NN"""
+    """function that plot the tensor resulted from the NN after the first phase"""
     sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.0, color_codes=True, rc=None)
     input_tensor = input_tensor.to(device)
     CNN_checkpoint = torch.load(path_job + '/results_training_1/model_checkpoint.pth', map_location=device)
@@ -100,13 +97,11 @@ def plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, var, pat
         if mean_layer == False:
             depth_levels = np.arange(0, chl_tensor.shape[2])
             masked_chl_tensor = apply_masks(chl_tensor, list_masks)
-            #mask_land = torch.cat(tuple([list_masks[i][:, :, :, :, 1:-1] for i in range(0, len(list_masks)-2)])).to(device)
             channel = compute_channel(var)
         else: 
             depth_levels = np.arange(0, len(list_layers) - 1)
             masked_NN_tensor = apply_masks(chl_tensor, list_masks)
             masked_chl_tensor = compute_mean_layers(masked_NN_tensor, list_layers, 2, (1, 1, len(list_layers), masked_NN_tensor.shape[3], masked_NN_tensor.shape[4]))   
-            #mask_land = torch.cat(tuple([list_masks[int(layer / resolution[2])][:, :, :, :, 1:-1] for layer in list_layers[:-1]])).to(device)
             channel = compute_channel(var)
         for depth_level in depth_levels:
             if mean_layer == False:
@@ -114,16 +109,11 @@ def plot_NN_maps_final_1(input_tensor, CNN_model, path_job, list_masks, var, pat
             elif mean_layer == True:
                 color_level = list_layers[depth_level] // resolution[2]
             plot_tensor = torch.clone(masked_chl_tensor) 
-            #plot_tensor = plot_tensor.masked_fill(mask_land == 0, -1.0)
             plot_tensor = np.transpose(plot_tensor.cpu(), [0,1,2,4,3])
             plot_tensor = torch.from_numpy(np.flip(plot_tensor.numpy(), 3).copy()) 
-            #plot_tensor = np.ma.masked_where(plot_tensor == -1.0, plot_tensor)
             newcmap = compute_cmap('jet')
-            #newcmap.set_bad(color='white')
-            print("depth level", depth_level)
-            print("color range", [parameters_plots[var][0][color_level], parameters_plots[var][1][color_level]])
             plt.imshow(plot_tensor[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][color_level + 1], vmax = parameters_plots[var][1][color_level + 1], interpolation='spline16')
-            #plt.colorbar(shrink=0.95, pad=0.01)
+            plt.colorbar(shrink=0.95, pad=0.01)
             my_xticks= np.arange(0, h, 70)
             my_yticks = np.arange(0, w, 65)
             my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 70)])
@@ -159,11 +149,6 @@ def plot_NN_maps_final_2(input_tensor, path_job, list_masks, var, path_fig_chann
             ensemble_chl_tensor[i_ens, :, :, :, :, :] = chl_tensor
     mean_chl_tensor = torch.mean(ensemble_chl_tensor, dim=0)
     std_chl_tensor = torch.std(ensemble_chl_tensor, dim=0)
-    print("mean chl tensor shape", mean_chl_tensor.shape)
-    print("std chl tensor shape", std_chl_tensor.shape)
-    #depth_levels = np.arange(0, mean_chl_tensor.shape[2])
-    #masked_chl_tensor = apply_masks(mean_chl_tensor, list_masks)
-    #channel = compute_channel(var)
     if mean_layer == False:
         depth_levels = np.arange(0, mean_chl_tensor.shape[2])
         masked_chl_tensor = apply_masks(mean_chl_tensor, list_masks)
@@ -185,19 +170,14 @@ def plot_NN_maps_final_2(input_tensor, path_job, list_masks, var, path_fig_chann
         plot_tensor_mean = np.transpose(plot_tensor_mean.cpu(), [0,1,2,4,3])
         plot_tensor_mean = torch.from_numpy(np.flip(plot_tensor_mean.numpy(), 3).copy())
         plot_tensor_std = torch.clone(masked_chl_std_tensor) 
-        print("plot tensor std ", torch.count_nonzero(plot_tensor_std)) 
-        print("tensor std min", torch.min(plot_tensor_std).item()) 
-        print("tensor std max", torch.max(plot_tensor_std).item()) 
         plot_tensor_std = np.transpose(plot_tensor_std.cpu(), [0,1,2,4,3])
         plot_tensor_std = torch.from_numpy(np.flip(plot_tensor_std.numpy(), 3).copy())
         cmap = plt.get_cmap("jet")   
         newcmap = compute_cmap('jet')
         #plot the mean
         fig_mean, ax_mean = plt.subplots()
-        print("depth level", depth_level)
-        print("color range", [parameters_plots[var][0][(list_layers[depth_level] // resolution[2] + list_layers[depth_level + 1] // resolution[2]) // 2], parameters_plots[var][1][(list_layers[depth_level] // resolution[2] + list_layers[depth_level + 1] // resolution[2]) // 2]])
         m = ax_mean.imshow(plot_tensor_mean[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][color_level + 2], vmax = parameters_plots[var][1][color_level + 2], interpolation='gaussian')
-        #plt.colorbar(m, shrink=0.95, pad=0.01)
+        plt.colorbar(m, shrink=0.95, pad=0.01)
         my_xticks = np.arange(0, h, 70)
         my_yticks = np.arange(0, w, 65)
         my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 70)])
@@ -213,8 +193,7 @@ def plot_NN_maps_final_2(input_tensor, path_job, list_masks, var, path_fig_chann
         #plot the std
         fig_std, ax_std = plt.subplots()
         s = ax_std.imshow(plot_tensor_std[0, channel, depth_level, :, :], cmap=newcmap, vmin = parameters_plots[var][0][color_level], vmax = parameters_plots[var][1][color_level], interpolation='spline16')
-        #ax_std.imshow(plot_tensor_std[0, channel, depth_level, :, :] / plot_tensor_mean[0, channel, depth_level, :, :] * 100, cmap=newcmap, vmin = 0, vmax = 100, interpolation='none')
-        #plt.colorbar(s, shrink=0.95, pad=0.01)
+        plt.colorbar(s, shrink=0.95, pad=0.01)
         my_xticks= np.arange(0, h, 70)
         my_yticks = np.arange(0, w, 65)
         my_xticks_label = np.array([int((index - 1) * resolution[1] / constant_longitude + 1 + longitude_interval[0]) for index in np.arange(0, h, 70)])
@@ -231,6 +210,7 @@ def plot_NN_maps_final_2(input_tensor, path_job, list_masks, var, path_fig_chann
 
 
 def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, path_job, var, path_mean_std, path_fig_channel, list_to_plot_coordinates):
+    """function that plot the profiles resulted from the NN and compares them with BFM's profiles"""
     sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=1.25, color_codes=True, rc=None)
     tensor_input_NN = tensor_input_NN.to(device)
     CNN_checkpoint = torch.load(path_job + '/results_training_1/model_checkpoint.pth', map_location=device)
@@ -257,9 +237,8 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
             #plot profiles
             path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
             plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
-            #plt.plot(profile_tensor_input_NN, depth_levels, color="red", label="input CNN")   #prima era profile_tensor_input_NN.cpu()
-            plt.plot(profile_tensor_NN_model, depth_levels, color="#2CA02C", label="CNN-3DMedSea")       #prima era profile_tensor_NN_model.cpu()
-            plt.plot(profile_tensor_num_model, depth_levels, color="#1F77B4", label="BFM")       #prima era profile_tensor_num_model.cpu()
+            plt.plot(profile_tensor_NN_model, depth_levels, color="#2CA02C", label="CNN-3DMedSea")       
+            plt.plot(profile_tensor_num_model, depth_levels, color="#1F77B4", label="BFM")      
             plt.grid(axis = 'x')
             plt.xlabel(r"Chlorophyll [$mg \ m^{-3}$]")
             plt.ylabel(r"Depth [$m$]")
@@ -271,6 +250,7 @@ def plot_models_profiles_1(tensor_input_NN, CNN_model, tensor_output_num_model, 
 
 
 def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_float, path_job, var, path_mean_std, path_fig_channel, list_to_plot_coordinates, n_ensemble):
+    """function that plot the profiles resulted from the NN and compares them with BFM's profiles and real BGC-Argo floats"""
     sns.set_theme(context='paper', style='whitegrid', font='sans-serif', font_scale=2.5, color_codes=True, rc=None)
     my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
     my_std_tensor = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -288,7 +268,6 @@ def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_floa
             tensor_output_NN_model = Denormalization(tensor_output_NN_model, my_mean_tensor, my_std_tensor).to(device)
             ensemble_chl_tensor[i_ens, :, :, :, :, :] = tensor_output_NN_model
     mean_chl_tensor = torch.mean(ensemble_chl_tensor, dim=0)
-    print("mean chl tensor shape", mean_chl_tensor.shape)
     CNN_checkpoint_1 = torch.load(path_job + "/results_training_1/model_checkpoint.pth", map_location=device)
     CNN_model_1 = CompletionN()
     CNN_model_1.load_state_dict(CNN_checkpoint_1['model_state_dict'])  
@@ -301,8 +280,6 @@ def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_floa
     depth_levels = resolution [2] * np.arange(tensor_input_NN.shape[2]-1, -1, -1) 
     channel = compute_channel(var)
     for plot_coordinate in list_to_plot_coordinates:
-        print("plot coordinate", plot_coordinate)
-        print("tensor num shape", tensor_output_num_model.shape)
         profile_tensor_num_model = tensor_output_num_model[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
         profile_tensor_float = tensor_float[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
         profile_tensor_NN_model = mean_chl_tensor[0, channel, :, plot_coordinate[0], plot_coordinate[1]]
@@ -315,16 +292,14 @@ def plot_models_profiles_2(tensor_input_NN, tensor_output_num_model, tensor_floa
         profile_tensor_NN_model = np.maximum(profile_tensor_NN_model, 0)
         #plot profiles
         path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
-        plt.yticks(np.arange(280, -40, -40), np.arange(0, 320, 40))  #,fontsize=8
-        #plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
-        plt.plot(profile_tensor_float, depth_levels, color="#d32a16", label=r"ARGO-float", linewidth=2.0)   #prima era profile_tensor_input_NN.cpu()
-        plt.plot(profile_tensor_NN_model, depth_levels, color="#2CA02C", label=r"CNN-3DMedSea", linewidth=2.0)       #prima era profile_tensor_NN_model.cpu()
-        plt.plot(profile_tensor_num_model, depth_levels, color="#1F77B4", label=r"MedBFM", linewidth=2.0)       #prima era profile_tensor_num_model.cpu()
+        plt.yticks(np.arange(280, -40, -40), np.arange(0, 320, 40))  
+        plt.plot(profile_tensor_float, depth_levels, color="#d32a16", label=r"ARGO-float", linewidth=2.0)  
+        plt.plot(profile_tensor_NN_model, depth_levels, color="#2CA02C", label=r"CNN-3DMedSea", linewidth=2.0)       
+        plt.plot(profile_tensor_num_model, depth_levels, color="#1F77B4", label=r"MedBFM", linewidth=2.0)    
         plt.plot(profile_tensor_NN_1_model, depth_levels, color="#2CA02C", linestyle="dashed", label=r"CNN-3DMedSea ($1^{st}$ phase)", linewidth=2.0 )
         plt.grid(axis = 'x')
         plt.xlabel(r"Chlorophyll [$mg \ m^{-3}$]")
         plt.ylabel(r"Depth [$m$]")
-        #plt.legend(loc="lower right", prop={'size': 10})
         plt.tight_layout()
         plt.savefig(path_fig_channel_coordinates + ".png", dpi=1200)
         plt.close()
@@ -365,73 +340,39 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
             ga_chl_tensor = mean_chl_tensor[:, :, : , ga_limits[0][0]:ga_limits[0][1], ga_limits[1][0]:ga_limits[1][1]]
             non_zero_mask = torch.where(ga_chl_tensor == 0, torch.nan, ga_chl_tensor)
             ga_mean_profile = torch.nanmean(non_zero_mask, dim=(0,1,3,4))
-            #non_zero_mask = ga_chl_tensor != 0
-            #ga_mean_profile = ga_chl_tensor[non_zero_mask].float().mean()   #torch.mean(ga_chl_tensor, axis=(0,1,3,4))
         elif mean_ga == "single_point":
-            coord_prof = dict_coord_ga[ga]   #[139, 153]
-            print("coord prof", coord_prof, flush=True)
+            coord_prof = dict_coord_ga[ga]   
             ga_mean_profile = torch.squeeze(mean_chl_tensor[:, :, : ,coord_prof[0], coord_prof[1]])
-            print("ga shape squeeze", ga_mean_profile.shape)
-            print("ga profile", ga_mean_profile)
-            #print("BFM profile", torch.squeeze(list_week_tensors_BFM[i][:, :, :, coord_prof[0], coord_prof[1]]))
         elif mean_ga == "mean_ngh":
-            print("inside mean ngh")
-            coord_prof = dict_coord_ga[ga]     #[139, 153]
-            print("coord prof", coord_prof, flush=True)
+            coord_prof = dict_coord_ga[ga]     
             ngh_amphitude = 30
             mean_chl_tensor = mean_chl_tensor * torch.cat(tuple([list_masks[i][:, :, :, :, 1:-1] for i in range(len(list_masks)-1)]), 2)
             ga_limits = dict_indexes_ga[ga]
             ga_chl_ngh_tensor = mean_chl_tensor[:, :, : , coord_prof[0]-ngh_amphitude:coord_prof[0]+ngh_amphitude, coord_prof[1]-ngh_amphitude:coord_prof[1]+ngh_amphitude]
-            print("ga ngh tensor shape", ga_chl_ngh_tensor.shape)
             non_zero_ngh_mask = torch.where(ga_chl_ngh_tensor == 0, torch.nan, ga_chl_ngh_tensor)
             ga_mean_profile = torch.nanmean(non_zero_ngh_mask, dim=(0,1,3,4))
         ga_mean_profile = torch.clamp_min(ga_mean_profile, min=0)
         ga_mean_profile = torch.from_numpy(moving_average(ga_mean_profile.detach().cpu().numpy(), 3))
         Hovmoller_tensor[:, i] = ga_mean_profile
-        #Hovmoller_tensor_BFM[:, i] = torch.squeeze(list_week_tensors_BFM[i][:, :, :, coord_prof[0], coord_prof[1]])
     #part 3 --> plot the Hovmoller
-    #x_number_ticks = np.arange(0, len(x_ticks))
-    #plt.figure(figsize=(8.8, 6))
-    fig, axs = plt.subplots(1, figsize=(8, 6))  #Prima era (14,6)
-
+    fig, axs = plt.subplots(1, figsize=(8, 6)) 
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
     plt.grid(False)
-
-    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.4,cmap=cmap,aspect='auto')  #in questo modo dovrei stampare fino a 200 metri
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax=0.4,cmap=cmap,aspect='auto')  
     plt.colorbar(im, shrink=0.9, pad=0.05)
-    #axs.set_title("CNN-3DMedSea CHLA timeline")
-    #axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=90)
-    #x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
-    x_ticks_labels = np.array(["09/2022", "12/2022", "03/2023", "06/2023"])
-    axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
-    #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
+    axs.set_title("CNN-3DMedSea CHLA timeline")
+    axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=45)
+    x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
+    #x_ticks_labels = np.array(["09/2022", "12/2022", "03/2023", "06/2023"])
+    #axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
     axs.set_ylabel(r"depth [$m$]")
     plt.tight_layout()
-
-    #im_BFM = axs.imshow(Hovmoller_tensor_BFM, vmin=0.0, vmax=0.75,cmap=cmap,aspect='auto')  
-    #plt.colorbar(im_BFM, shrink=0.9, pad=0.05)
-    #axs.set_title("BFM CHLA timeline")
-    #axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=90)
-    #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
-    #axs.set_ylabel(r"depth [$m$]")
-    #plt.tight_layout()
-
-    #fig.subplots_adjust(right=0.85)
-    #cbar_ax = fig.add_axes([0.88, 0.15, 0.025, 0.7])    #questi devo assolutamente capire a che cosa si riferiscono §
-    #cb = fig.colorbar(im1,  cax=cbar_ax, label=f"{var} [{dict_unit_measure[var]}]", shrink=0.1) 
-
     path_plots_hov = path_plots + "/hovmoller"
     if not os.path.exists(path_plots_hov):
         os.makedirs(path_plots_hov)
     plt.savefig(path_plots_hov + "/hovmoller_external_sept_aug_" + str(ga) +".png", dpi=600)
-
-    #path_plots_hov_BFM = path_plots + "/hovmoller_BFM"
-    #if not os.path.exists(path_plots_hov_BFM):
-    #    os.makedirs(path_plots_hov_BFM)
-    #plt.savefig(path_plots_hov_BFM + "/hovmoller_BFM.png", dpi=100)
-
     plt.close()
 
 
@@ -445,13 +386,11 @@ def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=Fa
         Hovmoller_tensor = float_device_tensor
     elif tensor_order == "LEV_order":
         Hovmoller_tensor = torch.cat((float_device_tensor[:, 46:52], float_device_tensor[:, :46]), axis = 1)
-        print("shape hovmoller tensro Lev", Hovmoller_tensor.shape)
     elif tensor_order == "NWM_order":
         #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292],float_device_tensor[:, 265:275], float_device_tensor[:, 479:483], float_device_tensor[:, 275:290], float_device_tensor[:, 483:486]), axis=1)
         #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], + float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 275:276], float_device_tensor[:, 288:290], float_device_tensor[:, 279:287], float_device_tensor[:, 274:275], float_device_tensor[:, 479:483], float_device_tensor[:, 276:277]), axis=1)
         #Hovmoller_tensor = torch.cat((float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 100:103], float_device_tensor[:, 475:477], float_device_tensor[:, 90:96], float_device_tensor[:, 97:100]), axis=1)
         Hovmoller_tensor = torch.cat((float_device_tensor[:, 108:111], float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 90:96], float_device_tensor[:, 97:99], float_device_tensor[:, 102:108]), axis=1)
-        print("shape hovmoller tensro NWM", Hovmoller_tensor.shape)
     if apply_prof_smooting == True:
         for i in range(Hovmoller_tensor.shape[1]):
             Hovmoller_tensor[:, i] = torch.from_numpy(moving_average(Hovmoller_tensor[:,i].detach().cpu().numpy(), 5))
@@ -460,12 +399,10 @@ def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=Fa
     cmap = plt.get_cmap('viridis')
     cmap.set_under('white')
     plt.grid(False)
-    print(Hovmoller_tensor[:20, 13])
-    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax = 0.40, cmap=cmap,aspect='auto')  #vmax =torch.quantile(Hovmoller_tensor[-20:, :], 0.95, interpolation="linear")
+    im = axs.imshow(Hovmoller_tensor[:20, :], vmin=0.0, vmax = 0.40, cmap=cmap,aspect='auto') 
     plt.colorbar(im, shrink=0.9, pad=0.05)
     x_ticks_labels = np.array(["10/2022", "01/2023", "04/2023", "07/2023"])
     axs.set_xticks(np.arange(0, Hovmoller_tensor.shape[1], 13), x_ticks_labels, rotation=45)
-    #axs.set_yticks(np.arange(0, 30, 5), np.arange(0, 300, 50))
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
     axs.set_ylabel(r"depth [$m$]")
     plt.tight_layout()

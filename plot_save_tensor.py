@@ -9,7 +9,6 @@ from hyperparameter import *
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
 path = "fig/"
 path_directory_save = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution" + "/dataset" 
 path_directory_plot = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution" + "/plots"   
@@ -119,7 +118,3 @@ def save_tensors_directory(kindof, tensors_directory, year_interval, flag, var, 
 
 
 #save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/votemper/", (2023, 2024), "t", "votemper", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/vosaline/", (2023, 2024), "t", "vosaline", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/vomecrty/", (2023, 2024), "t", "vomecrty", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/sossheig/", (2023, 2024), "t", "sossheig", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/soshfldo/", (2023, 2024), "t", "soshfldo", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")

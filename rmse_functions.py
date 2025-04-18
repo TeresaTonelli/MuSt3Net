@@ -17,7 +17,6 @@ from utils_training_1 import load_land_sea_masks,  re_load_float_input_data, re_
 from utils_training_2 import compute_3D_ensemble_mean_std
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device", device)
 
 
 def select_season_tensors(list_tensors, season, years_week_duplicates_list):
@@ -37,9 +36,7 @@ def create_ga_mask(my_ga, tensor_shape):
     my_lat_interval, my_long_interval = dict_ga[my_ga][1], dict_ga[my_ga][0]
     my_lat_index_interval = [transform_latitude_index(my_lat_interval[0]), transform_latitude_index(my_lat_interval[1])]
     my_long_index_interval = [transform_longitude_index(my_long_interval[0]), transform_longitude_index(my_long_interval[1])]
-    #print("my lat index interval", my_lat_index_interval)
-    #print("my long index interval", my_long_index_interval)
-    ga_mask = torch.zeros(tensor_shape)    #torch.ones(tensor_shape)
+    ga_mask = torch.zeros(tensor_shape)   
     ga_indices = list(itertools.product([i_long for i_long in range(my_long_index_interval[0], my_long_index_interval[1] + 1)], [i_lat for i_lat in range(my_lat_index_interval[0], my_lat_index_interval[1] + 1)]))
     indices_tensor = torch.tensor(ga_indices)
     ga_mask[:, :, :, indices_tensor[:, 0]-1, indices_tensor[:, 1]-1] = 1.0    
@@ -52,19 +49,12 @@ def rmse_float_CNN_BFM(list_input_tensors, indexes_train, indexes_test, list_flo
     list_input_testing = [list_input_tensors[i_te] for i_te in indexes_test]
     if season in list(dict_season.keys()): 
         #select a specific season
-        print("season selection", flush=True)
         season_tensors_train, season_indexes_train = select_season_tensors(list_input_training, season, [years_week_list[i_tr] for i_tr in indexes_train])
         season_float_tensors_train, season_float_indexes_train = select_season_tensors([list_float_tensors[i_tr] for i_tr in indexes_train], season, [years_week_list[i_tr] for i_tr in indexes_train])
         season_BFM_tensors_train, season_BFM_indexes_train = select_season_tensors([list_BFM_tensors[i_tr] for i_tr in indexes_train], season, [years_week_list[i_tr] for i_tr in indexes_train])
         season_tensors_test, season_indexes_test = select_season_tensors(list_input_testing, season, [years_week_list[i_te] for i_te in indexes_test])
         season_float_tensors_test, season_float_indexes_test = select_season_tensors([list_float_tensors[i_te] for i_te in indexes_test], season, [years_week_list[i_te] for i_te in indexes_test])
         season_BFM_tensors_test, season_BFM_indexes_test = select_season_tensors([list_BFM_tensors[i_te] for i_te in indexes_test], season, [years_week_list[i_te] for i_te in indexes_test])
-        print("season indexes train", season_indexes_train)
-        print("season indexes float train", season_float_indexes_train)
-        print("season indexes BFM train", season_BFM_indexes_train)
-        print("season indexes test", season_indexes_test)
-        print("season indexes float test", season_float_indexes_test)
-        print("season indexes BFM test", season_BFM_indexes_test)
     else:
         season_tensors_train = list_input_training
         season_float_tensors_train = [list_float_tensors[i_tr] for i_tr in indexes_train]
@@ -87,19 +77,14 @@ def rmse_float_CNN_BFM(list_input_tensors, indexes_train, indexes_test, list_flo
         season_output_tensors_test = [Denormalization(output_tensor, my_mean, my_std) for output_tensor in season_output_tensors_test]
         #loss computation
         float_coord_masks = [generate_float_mask(list_float_coordinates[i]) for i in range(len(list_float_coordinates))]
-        print("count zero ga masks", [torch.count_nonzero(float_coord_masks[i]) for i in range(len(float_coord_masks))], flush=True)
         season_losses_CNN_train = [convolutional_network_float_exp_weighted_loss(season_float_tensors_train[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_train[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_train[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_train))]
         mean_season_loss_CNN_train = np.nanmean(season_losses_CNN_train)
-        print("season loss CNN train", mean_season_loss_CNN_train, flush=True)
         season_losses_CNN_test = [convolutional_network_float_exp_weighted_loss(season_float_tensors_test[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_test[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_test[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_test))]
         mean_season_loss_CNN_test = np.nanmean(season_losses_CNN_test)
-        print("season loss CNN test", mean_season_loss_CNN_test, flush=True)
         season_losses_BFM_train = [convolutional_network_float_exp_weighted_loss(season_float_tensors_train[i][:, :, :-1, :, 1:-1].float(), season_BFM_tensors_train[i][:,:, :-1, :, 1:-1].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_BFM_indexes_train[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_BFM_tensors_train))]
         mean_season_loss_BFM_train = np.nanmean(season_losses_BFM_train)
-        print("season losses BFM train", mean_season_loss_BFM_train, flush=True)
         season_losses_BFM_test = [convolutional_network_float_exp_weighted_loss(season_float_tensors_test[i][:, :, :-1, :, 1:-1].float(), season_BFM_tensors_test[i][:,:, :-1, :, 1:-1].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_BFM_indexes_test[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_BFM_tensors_test))]
         mean_season_loss_BFM_test = np.nanmean(season_losses_BFM_test)
-        print("season loss BFM test", mean_season_loss_BFM_test, flush=True)
     return mean_season_loss_CNN_train, mean_season_loss_CNN_test, mean_season_loss_BFM_train, mean_season_loss_BFM_test
 
 
@@ -128,21 +113,15 @@ def rmse_ga_season_2(list_input_tensors, indexes_train, indexes_test, list_float
         season_output_tensors_test = [Denormalization(output_tensor, my_mean, my_std) for output_tensor in season_output_tensors_test]
         #loss computation
         float_coord_masks = [generate_float_mask(list_float_coordinates[i]) * ga_masks[i].to(device) for i in range(len(list_float_coordinates))]
-        print("count zero ga masks", [torch.count_nonzero(float_coord_masks[i]) for i in range(len(float_coord_masks))], flush=True)
         season_losses_train = [convolutional_network_float_exp_weighted_loss(season_float_tensors_train[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_train[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_train[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_train))]
-        print("season losses train", season_losses_train, flush=True)
         mean_season_loss_train = np.nanmean(season_losses_train)
-        print("season loss train", mean_season_loss_train, flush=True)
         season_losses_test = [convolutional_network_float_exp_weighted_loss(season_float_tensors_test[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_test[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_test[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_test))]
         mean_season_loss_test = np.nanmean(season_losses_test)
-        print("season loss test", mean_season_loss_test, flush=True)
     return mean_season_loss_train, mean_season_loss_test
 
 
 def rmse_ga_season_2_final(list_input_tensors, indexes_train, indexes_test, list_float_tensors, list_float_coordinates, CNN_model, years_week_list, ga, season, path_mean_std, threshold = 20):
     """this function computes the root mean square error of a list of profiles related to a specific ga and a season"""
-    print("ga", ga, flush=True)
-    print("season", season, flush=True)
     if threshold == 20:
         list_input_tensors = list_input_tensors[:157]
         indexes_train = [i for i in indexes_train if i < 157]
@@ -173,8 +152,7 @@ def rmse_ga_season_2_final(list_input_tensors, indexes_train, indexes_test, list
     if ga in list(dict_ga.keys()):
         ga_masks = [create_ga_mask(ga, (1,1,d,h,w)) for i in range(len(list_float_coordinates))]
     elif ga == "all_ga":
-        ga_masks = [torch.cat(land_sea_masks + [land_sea_masks[-1]], 2) for i in range(len(list_float_coordinates))]     #land_sea_masks
-        print("ga mask shapes", ga_masks[0].shape, flush=True)
+        ga_masks = [torch.cat(land_sea_masks + [land_sea_masks[-1]], 2) for i in range(len(list_float_coordinates))]     
     #model evaluation and loss evaluation, both for training and testing dataset
     CNN_model.eval()
     with torch.no_grad():
@@ -184,17 +162,12 @@ def rmse_ga_season_2_final(list_input_tensors, indexes_train, indexes_test, list
         season_output_tensors_test = [Denormalization(output_tensor, my_mean, my_std) for output_tensor in season_output_tensors_test]
         #loss computation
         float_coord_masks = [generate_float_mask(list_float_coordinates[i]) * ga_masks[i].to(device) for i in range(len(list_float_coordinates))]
-        print("count zero ga masks", [torch.count_nonzero(float_coord_masks[i]) for i in range(len(float_coord_masks))], flush=True)
         season_losses_train = [convolutional_network_float_exp_weighted_loss(season_float_tensors_train[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_train[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_train[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_train))]
-        print("season losses train", season_losses_train, flush=True)
         season_losses_train = [np.sqrt(season_loss_train.float()) for season_loss_train in season_losses_train]
-        print("season losses train sqrt", season_losses_train, flush=True)
         mean_season_loss_train = np.nanmean(season_losses_train)
-        print("season loss train", mean_season_loss_train, flush=True)
         season_losses_test = [convolutional_network_float_exp_weighted_loss(season_float_tensors_test[i][:, :, :-1, :, 1:-1].float(), season_output_tensors_test[i].float(), land_sea_masks, float_coord_masks[years_week_list.index(season_indexes_test[i])], torch.ones([1, 1, d-2, h, w-2]).to(device)) for i in range(len(season_output_tensors_test))]
         season_losses_test = [np.sqrt(season_loss_test) for season_loss_test in season_losses_test]
         mean_season_loss_test = np.nanmean(season_losses_test)
-        print("season loss test", mean_season_loss_test, flush=True)
     return mean_season_loss_train, mean_season_loss_test
 
 

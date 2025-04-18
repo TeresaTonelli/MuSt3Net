@@ -119,16 +119,3 @@ def float_device_identifier(file_dir, list_year_week, list_lat_long, epsilons):
 
 
 
-#list_float_devices = compute_list_float_devices("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt")
-#print(list_float_devices[200:300], flush=True)
-#select_float_measures("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", '6901765/SD6901765_001.nc')
-#list_unseen_floats, list_unseen_indexes = search_unseen_float("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", list_float_devices, [2019, 2020, 2021], 'CHLA')
-#create_float_txt(list_unseen_indexes, "/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt")
-
-#single_float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt", [2020, 6], [73, 271], [3.0, 3.0])
-#float_device_identifier("/leonardo_scratch/large/userexternal/ttonelli/OGS/SUPERFLOAT/SUPERFLOAT/Float_Index.txt",[2021,4], [[62, 447], [139, 66]], [3.0, 3.0])
-
-#print("end")
-
-
-
