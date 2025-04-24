@@ -5,7 +5,24 @@ bc the values of the unknown we want to estimate are way higher than 1
 import os
 import torch 
 from hyperparameter import *
-from mean_pixel_value import MV_pixel, std_pixel
+
+
+def MV_pixel(train_dataset, number_channel=number_channel):
+    channel_total_mean = torch.zeros(size=(number_channel,))       
+    for train_tensor in train_dataset:
+        tensor_mean = train_tensor.mean(axis=(0, 2, 3, 4))      
+        channel_total_mean = channel_total_mean + tensor_mean
+    channel_total_mean = channel_total_mean / len(train_dataset)
+    return channel_total_mean
+
+
+def std_pixel(train_dataset, number_channel=number_channel):
+    channel_total_std = torch.zeros(size=(number_channel,))     
+    for train_tensor in train_dataset:
+        tensor_std = train_tensor.std(axis=(0, 2, 3, 4))       
+        channel_total_std = channel_total_std + tensor_std
+    channel_total_std = channel_total_std / len(train_dataset)
+    return channel_total_std
 
 
 def Normalization(list_tensor, phase, phase_directory, number_channel=number_channel):
@@ -67,3 +84,8 @@ def Normalization_Float(list_tensor, mean_tensor, std_tensor):
         normalized_list.append(tensor)
     return normalized_list
 
+
+def Denormalization(normalized_tensor, mean_tensor, std_tensor):
+    """this function performs the inverse of normalization"""
+    denorm_tensor = normalized_tensor * std_tensor + mean_tensor
+    return denorm_tensor

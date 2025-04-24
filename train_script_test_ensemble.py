@@ -10,28 +10,26 @@ import random
 import datetime
 
 from convolutional_network import CompletionN
-from losses import convolutional_network_weighted_loss, convolutional_network_float_weighted_loss, convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
-from mean_pixel_value import MV_pixel
-from utils_mask import generate_input_mask, generate_sea_land_mask
-from normalization import Normalization
-from denormalization import Denormalization
+#from losses import  convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
+#from mean_pixel_value import MV_pixel
+#from utils_mask import generate_input_mask, generate_sea_land_mask
+from normalization_functions import Normalization, Denormalization
 from get_dataset import *
-from plot_error import Plot_Error
+#from plot_error import Plot_Error
 from plot_results import *
-from utils_function import *
-from utils_mask import generate_float_mask, compute_exponential_weights
+from utils.utils_general import *
+#from utils_mask import generate_float_mask, compute_exponential_weights
 from generation_training_dataset import generate_dataset_phase_2_saving
-from utils_training_1 import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
-from utils_training_2 import compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
-from utils_generation_train_1p import write_list, read_list
-from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p, testing_2p_ensemble
+from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates, compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
+from utils.utils_dataset_generation import write_list, read_list
+from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
 
 
 #3 parameters to define the jobs pypeline
 first_run_id = 2
 end_train_1p = 1
 end_1p = 1
-path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-22 10:42:50.013434"
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-18 16:23:24.817583" 
 
 
 num_channel = number_channel  
@@ -113,7 +111,7 @@ if end_1p == 0:
 #Start the 2 phase of the training
 elif end_1p == 1:
     #start 2 phase --> ensemble phase
-    n_ensemble = 10
+    n_ensemble = 2
     path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, 'P_l', 200, 0, 0.001)
     f_job_dev = open(path_job + "/file_job_dev.txt", "a")
     years_week_dupl_indexes_1 = read_list(path_lr + "/ywd_indexes.txt")
@@ -122,13 +120,13 @@ elif end_1p == 1:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 40  
+    n_epochs_2p = 20  
     snaperiod_2p = 5
     l_r_2p = 0.001
     for i_ens in range(n_ensemble):
-        list_year_week_indexes, old_float_total_dataset, list_float_profiles_coordinates, sampled_list_float_profile_coordinates, index_training_2, index_internal_testing_2, index_external_testing_2, train_dataset_2, internal_test_dataset_2, test_dataset_2 = generate_dataset_phase_2_saving("P_l", path_results_2, [2019, 2020, 2021], "dataset_training/float", land_sea_masks)
+        list_year_week_indexes, old_float_total_dataset, list_float_profiles_coordinates, sampled_list_float_profile_coordinates, index_training_2, index_internal_testing_2, index_external_testing_2, train_dataset_2, internal_test_dataset_2, test_dataset_2 = generate_dataset_phase_2_saving("P_l", path_results_2, [2019], "dataset_training/float", land_sea_masks)
         #saves indexes of phase 2 for each ensemble
-        write_list(list_year_week_indexes, path_lr_2 + "ensemble/ywd_indexes.txt")
+        write_list(list_year_week_indexes, path_lr_2 + "/ensemble_ywd_indexes.txt")
         write_list(index_training_2, path_lr_2 + "/index_training.txt")
         write_list(index_internal_testing_2, path_lr_2 + "/index_internal_testing.txt")
         write_list(index_external_testing_2, path_lr_2 + "/index_external_testing.txt")

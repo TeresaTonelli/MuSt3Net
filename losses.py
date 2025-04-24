@@ -3,7 +3,7 @@ Implementation of the losses for the different train of the model
 """
 import torch
 from torch.nn.functional import mse_loss
-from utils_mask import apply_masks, compute_weights
+from utils.utils_mask import apply_masks, compute_weights
 from hyperparameter import * 
 
 

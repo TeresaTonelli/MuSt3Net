@@ -9,10 +9,10 @@ import seaborn as sns
 
 from convolutional_network import CompletionN
 from hyperparameter import *
-from normalization import Normalization, tmp_Normalization
-from utils_function import compute_profile_coordinates
-from utils_generation_train_1p import read_list 
-from utils_training_1 import load_tensors, load_land_sea_masks, load_old_total_tensor, load_transp_lat_coordinates, re_load_float_input_data, re_load_float_input_data_external
+from normalization_functions import Normalization, tmp_Normalization
+from utils.utils_general import compute_profile_coordinates
+from utils.utils_dataset_generation import read_list 
+from utils.utils_training import load_tensors, load_land_sea_masks, load_old_total_tensor, load_transp_lat_coordinates, re_load_float_input_data, re_load_float_input_data_external
 from plot_results_final import plot_NN_maps_final_1, plot_NN_maps_final_2, plot_models_profiles_1, plot_models_profiles_2, plot_BFM_maps, plot_Hovmoller, plot_Hovmoller_real_float
 
 
@@ -214,3 +214,31 @@ elif prob_statement == "hovmoller_float":
     float_device_tensor_NWM = torch.load("weekly_NWM_5906990_mean_float_tensor.pt")
     plot_Hovmoller_real_float(total_float_tensor, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order")
     plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="NWM_order")
+
+
+if prob_statement == "hovmoller_float":
+    total_float_tensor = torch.load("total_float_tensor.pt")
+    weekly_total_float_tensor = torch.load("weekly_mean_float_tensor.pt")
+    path_images = "float_plots/weekly_total/"
+    if not os.path.exists(path_images):
+        os.makedirs(path_images)
+    for i in range(250, 280):
+        plt.plot(torch.squeeze(weekly_total_float_tensor[:, i]).flip(0), np.arange(0, 31), linewidth=2.0)
+        plt.savefig(path_images + str(i) + ".png", dpi=100)
+        plt.close()
+    path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-14 10:05:14.974986"
+    path_results_2 = path_job + "/results_training_2_ensemble"
+    list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+    path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
+    path_fig_channel_2 = path_results_2 + "/P_l/20/lrc_0.001/plots_2_final"
+    if not os.path.exists(path_fig_channel_2):
+        os.makedirs(path_fig_channel_2)
+    float_device_tensor_LEV = torch.load("weekly_LEV_mean_float_tensor_no_0.pt")
+    path_images = "float_plots/weekly_LEV_total/"
+    float_device_tensor_NWM_5 = torch.load("weekly_NWM_5906990_mean_float_tensor_no_0.pt")
+    float_device_tensor_NWM_1 = torch.load("weekly_NWM_1902605_mean_float_tensor.pt")
+    flipped_LEV = float_device_tensor_LEV.flip(0)
+    weekly_total_float_tensor_no_0 = torch.load("weekly_mean_float_tensor_no_0.pt")
+    plot_Hovmoller_real_float(weekly_total_float_tensor_no_0, path_fig_channel_2, "MED", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="standard", name_fig="weekly_total_no_0")
+    plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order", name_fig="weekly_no_0_final_sept_aug", apply_prof_smooting=True)
+    plot_Hovmoller_real_float(weekly_total_float_tensor_no_0, path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="NWM_order", name_fig="weekly_no_0_final_oct_sept_ls", apply_prof_smooting=True)

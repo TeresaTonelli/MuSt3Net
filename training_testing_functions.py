@@ -2,14 +2,14 @@
 
 import torch
 from convolutional_network import CompletionN
-from denormalization import Denormalization
+from normalization_functions import Denormalization
 from losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 from plot_error import Plot_Error
-from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean, NN_differences_layer_mean_season
-from utils_function import *
-from utils_generation_train_1p import write_list, read_list
-from utils_mask import generate_float_mask
-from utils_training_1 import load_old_total_tensor
+from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
+from utils.utils_general import *
+from utils.utils_dataset_generation import write_list, read_list
+from utils.utils_mask import generate_float_mask
+from utils.utils_training import load_old_total_tensor
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -126,8 +126,8 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
         #Save the list of train and test losses --> useful only to obtain a complete plot of the loss behavior at the end
         write_list(train_losses_1p, path_losses + "/train_losses_1p.txt")
         write_list(test_losses_1p, path_losses + "/test_losses_1p.txt")
-    Plot_Error([train_losses_1p[i] for i in range(len(train_losses_1p)) if (i+1)%10 == 0], n_epochs_1p, int(n_epochs_1p / 10), "1p_train", path_losses + "/")
-    Plot_Error(test_losses_1p, n_epochs_1p, snaperiod, "1p", path_losses + "/")
+    #Plot_Error([train_losses_1p[i] for i in range(len(train_losses_1p)) if (i+1)%10 == 0], n_epochs_1p, int(n_epochs_1p / 10), "1p_train", path_losses + "/")
+    #Plot_Error(test_losses_1p, n_epochs_1p, snaperiod, "1p", path_losses + "/")
     return None
 
 
@@ -166,8 +166,8 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
                 os.makedirs(path_BFM_mean_layer_test_data)
             plot_models_profiles_1p(torch.unsqueeze(denorm_testing_input[:, 6, :, :, :], 1), denorm_testing_output, torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
                                 var, path_profiles_test_data, transposed_lat_coordinates[index_external_testing[i]]) 
-            plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
-            plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_reconstruction_test_data)
+            #plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
+            #plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1).to(device), land_sea_masks, var, path_BFM_reconstruction_test_data)
             plot_NN_maps_layer_mean(denorm_testing_output, land_sea_masks, var, path_NN_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             plot_NN_maps_layer_mean(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             #remove all the tensors from the gpu 
@@ -315,8 +315,6 @@ def testing_2p(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_tra
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
             plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  
-            season = compute_season(years_week_dupl_indexes[index_external_testing_2[i]][1])
-            NN_differences_layer_mean_season(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_season_test_data, list_float_profiles_coordinates[index_external_testing_2[i]], season)
             del test_data_2
             torch.cuda.empty_cache()
     del my_mean_tensor_2
@@ -368,8 +366,6 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
-            season = compute_season(years_week_dupl_indexes[index_external_testing_2[i]][1])
-            NN_differences_layer_mean_season(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_season_test_data, list_float_profiles_coordinates[index_external_testing_2[i]], season)
             del test_data_2
             torch.cuda.empty_cache()
     write_list(test_loss_list, path_losses_2p + "/test_loss_final.txt")

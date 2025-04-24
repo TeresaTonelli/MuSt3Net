@@ -27,21 +27,21 @@ import datetime
 
 
 from convolutional_network import CompletionN
-from normalization import Normalization
+from normalization_functions import Normalization
 from get_dataset import *
 from plot_results import *
-from utils_function import *
+from utils.utils_general import *
 from generation_training_dataset import generate_dataset_phase_2_saving
-from utils_training_1 import prepare_paths, reload_paths_1p, prepare_paths_2, generate_training_dataset_1,split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
-from utils_generation_train_1p import write_list, read_list
+from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2, generate_training_dataset_1,split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates
+from utils.utils_dataset_generation import write_list, read_list
 from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 0
-end_train_1p = 0
-end_1p = 0
-path_job = ""
+first_run_id = 2
+end_train_1p = 1
+end_1p = 1
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-18 16:23:24.817583"
 
 
 num_channel = number_channel  
@@ -98,7 +98,7 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 4 #400
+        n_epochs_1p = 11 #400
         snaperiod = 2
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")

@@ -8,10 +8,9 @@ import os
 import datetime
 import pickle
 
-from get_dataset import concatenate_tensors, get_list_float_tensor_weeks, get_list_model_tensor_weeks, get_list_float_tensor_year_weeks, get_list_model_tensor_year_weeks
-from utils_function import *
-from utils_mask import *
-from normalization import Normalization
+from get_dataset import concatenate_tensors, get_list_model_tensor_year_weeks
+from utils.utils_general import *
+from utils.utils_mask import *
 
 
 

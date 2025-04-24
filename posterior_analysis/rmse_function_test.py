@@ -6,15 +6,14 @@ import os
 
 from convolutional_network import CompletionN
 from hyperparameter import *
-from normalization import Normalization, tmp_Normalization
+from normalization_functions import Normalization, tmp_Normalization
 from rmse_functions import select_season_tensors, create_ga_mask_full, compute_rmse_ga_season_2, compute_rmse_ga_season_2_ensemble, rmse_float_CNN_BFM, rmse_ga_season_2, RMSE_ensemble_ga_season, RMSE_ensemble_ga, RMSE_ensemble_season
-from utils_function import compute_profile_coordinates
-from utils_generation_train_1p import write_list, read_list
-from utils_training_1 import load_land_sea_masks, re_load_tensors, re_load_old_float_tensors, re_load_float_input_data, load_old_total_tensor
+from utils.utils_general import compute_profile_coordinates
+from utils.utils_dataset_generation import write_list, read_list
+from utils.utils_training import load_land_sea_masks, re_load_tensors, re_load_old_float_tensors, re_load_float_input_data, load_old_total_tensor
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device", device)
 
 #a --> test for RMSE function for 1 season and 1 ga
 #path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-01-30 11:34:44.708444"

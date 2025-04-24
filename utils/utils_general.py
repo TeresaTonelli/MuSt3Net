@@ -9,7 +9,6 @@ import itertools
 from hyperparameter import * 
 
 
-
 def tensor_sample(tensor, k):
     """this function select k elemnt from a tensor and recreate a copy of the original tensor which contains only those elements"""
     depths_index_range = tensor.shape[2]   

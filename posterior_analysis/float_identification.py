@@ -6,8 +6,8 @@ import torch
 import os
 from datetime import datetime
 
-from utils_function import transform_latitudes_longitudes
-from utils_generation_train_1p import read_txt_file
+from utils.utils_general import transform_latitudes_longitudes
+from utils.utils_dataset_generation import read_txt_file
 
 
 def transform_float_data(time):
@@ -94,7 +94,6 @@ def single_float_device_identifier(file_dir, list_year_week, list_lat_long, epsi
             latitude = float(line_info_data[1])
             longitude = float(line_info_data[2])
             time = line_info_data[3]
-            #print("time", time)
             year, month, day = transform_float_data(time)
             day = int(day)
             month = int(month)

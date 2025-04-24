@@ -6,15 +6,13 @@ import os
 import itertools
 
 from convolutional_network import CompletionN
-from denormalization import Denormalization
 from hyperparameter import *
 from losses import convolutional_network_float_exp_weighted_loss
-from normalization import Normalization, tmp_Normalization
-from utils_function import transform_latitude_index, transform_longitude_index, compute_profile_coordinates
-from utils_generation_train_1p import write_list, read_list
-from utils_mask import generate_float_mask
-from utils_training_1 import load_land_sea_masks,  re_load_float_input_data, re_load_old_float_tensors
-from utils_training_2 import compute_3D_ensemble_mean_std
+from normalization_functions import Normalization, tmp_Normalization, Denormalization
+from utils.utils_general import transform_latitude_index, transform_longitude_index, compute_profile_coordinates
+from utils.utils_dataset_generation import write_list, read_list
+from utils.utils_mask import generate_float_mask
+from utils.utils_training import load_land_sea_masks,  re_load_float_input_data, re_load_old_float_tensors, compute_3D_ensemble_mean_std
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

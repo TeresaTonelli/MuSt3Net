@@ -11,10 +11,10 @@ import os
 import itertools
 
 from convolutional_network import CompletionN
-from denormalization import Denormalization
+from normalization_functions import Denormalization
 from hyperparameter import * 
-from utils_mask import apply_masks
-from utils_function import compute_mean_layers, compute_profile_mean
+from utils.utils_mask import apply_masks
+from utils.utils_general import compute_mean_layers, compute_profile_mean
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

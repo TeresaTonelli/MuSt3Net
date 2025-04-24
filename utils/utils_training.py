@@ -9,8 +9,11 @@ import random
 
 from get_dataset import concatenate_tensors
 from hyperparameter import *
-from utils_function import compute_profile_coordinates, remove_float, fill_tensor_opt
-from utils_generation_train_1p import read_list
+from utils.utils_general import compute_profile_coordinates, remove_float, fill_tensor_opt
+from utils.utils_dataset_generation import read_list
+from normalization_functions import Denormalization
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def prepare_paths(name_datetime_folder, biogeoch_var_to_predict, epoch_c, epoch_pretrain, lr_c):
@@ -376,4 +379,45 @@ def recreate_train_test_datasets(total_dataset_norm, indexes_train, indexes_inte
     internal_test_dataset = [total_dataset_norm[i] for i in indexes_internal_test]
     test_dataset = [total_dataset_norm[i] for i in indexes_external_test]
     return train_dataset, internal_test_dataset, test_dataset
+
+
+def compute_ensemble_mean(list_path_test_loss):
+    n_ens = len(list_path_test_loss)
+    n_ens_means = []
+    for i_ens in range(n_ens):
+        test_loss_list = read_list(list_path_test_loss[i_ens])
+        test_loss_list = [test_loss_list[i].cpu() for i in range(len(test_loss_list))]
+        test_mean = np.mean(np.array(test_loss_list))
+        n_ens_means.append(test_mean)
+    return np.mean(np.array(n_ens_means))
+
+
+def compute_ensemble_std(list_path_test_loss):
+    n_ens = len(list_path_test_loss)
+    n_ens_means = []
+    for i_ens in range(n_ens):
+        test_loss_list = read_list(list_path_test_loss[i_ens])
+        test_loss_list = [test_loss_list[i].cpu() for i in range(len(test_loss_list))]
+        test_std = np.std(np.array(test_loss_list))
+        n_ens_means.append(test_std)
+    return np.mean(np.array(n_ens_means))    
+
+
+def compute_3D_ensemble_mean_std(test_data, list_ensemble_models, path_mean_std):
+    mean_tensor_2 = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
+    std_tensor_2 = torch.unsqueeze(torch.load(path_mean_std + "/std_tensor.pt")[:, 6, :, :, :], 1).to(device)
+    list_models_outputs = []
+    for ens_model in list_ensemble_models:
+        ens_model.to(device)
+        ens_model.eval()
+        with torch.no_grad():
+            test_data = test_data.to(device)
+            test_output = ens_model(test_data.float())
+            denorm_test_output = Denormalization(test_output, mean_tensor_2, std_tensor_2)
+            list_models_outputs.append(denorm_test_output)
+    #compute the mean of the n_ensemble output tensors
+    stacked_tensor_outputs = torch.stack([list_models_outputs[i_ens] for i_ens in range(len(list_ensemble_models))])
+    tensor_mean = torch.mean(stacked_tensor_outputs, dim=0)
+    tensor_std = torch.std(stacked_tensor_outputs, dim=0)    
+    return tensor_mean, tensor_std
 
