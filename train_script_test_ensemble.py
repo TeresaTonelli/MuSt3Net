@@ -14,12 +14,12 @@ from convolutional_network import CompletionN
 #from mean_pixel_value import MV_pixel
 #from utils_mask import generate_input_mask, generate_sea_land_mask
 from normalization_functions import Normalization, Denormalization
-from get_dataset import *
+from data_preprocessing.get_dataset import *
 #from plot_error import Plot_Error
-from plot_results import *
+from CNN_plots.plot_results import *
 from utils.utils_general import *
 #from utils_mask import generate_float_mask, compute_exponential_weights
-from generation_training_dataset import generate_dataset_phase_2_saving
+from data_preprocessing.generation_training_dataset import generate_dataset_phase_2_saving
 from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates, compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
 from utils.utils_dataset_generation import write_list, read_list
 from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
@@ -120,7 +120,7 @@ elif end_1p == 1:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 20  
+    n_epochs_2p = 40  
     snaperiod_2p = 5
     l_r_2p = 0.001
     for i_ens in range(n_ensemble):

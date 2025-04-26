@@ -8,7 +8,7 @@ import os
 import datetime
 import pickle
 
-from get_dataset import concatenate_tensors, get_list_model_tensor_year_weeks
+from data_preprocessing.get_dataset import concatenate_tensors, get_list_model_tensor_year_weeks
 from utils.utils_general import *
 from utils.utils_mask import *
 

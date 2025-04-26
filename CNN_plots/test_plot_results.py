@@ -32,7 +32,7 @@ if prob_statement == "maps_1":
     list_ywd_indexes = read_list(path_lr + "/ywd_indexes.txt")
     index_external_test = read_list(path_lr + "/index_external_testing.txt")
     list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    path_mean_std = path_results_1 + "/mean_and_std_tensors" #"/mean_and_std_tensors_plots/mean_and_std_tensors"
+    path_mean_std = path_results_1 + "/mean_and_std_tensors"
     path_fig_channel = path_results_1 + "/P_l/200/lrc_0.001/plots_1_final"
     if not os.path.exists(path_fig_channel):
         os.makedirs(path_fig_channel)
@@ -53,7 +53,6 @@ if prob_statement == "maps_1":
                 break
     #preparing input data
     input_tensor = load_tensors("dataset_training/total_dataset/P_l/2022/", [(4, duplicate)])
-    #input_tensor, mean_tensor, std_tensor = Normalization(input_tensor, "1p", path_results_1 + "/mean_and_std_tensors_plots")
     input_tensor = tmp_Normalization(input_tensor, "1p", path_mean_std)   
     input_tensor = input_tensor[0]
     #load BFM tensor
@@ -169,9 +168,6 @@ elif prob_statement == "hovmoller":
     list_week_tensors_BFM = [torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", 0, [(2019, i, 2)])[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1) for i in range(1, 53)]
     #plot the Hovmoller wrt different geographical regions
     plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "NWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "SWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "TYR", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "ION", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
     plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "LEV", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
 
 
@@ -195,37 +191,12 @@ elif prob_statement == "hovmoller_external":
     list_week_tensors_BFM = [torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", 0, [(2019, i, 2)])[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1) for i in range(1, 53)]
     #plot the Hovmoller wrt different geographical regions
     plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "NWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "SWM", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "TYR", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-    #plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "ION", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
     plot_Hovmoller(list_week_tensors_norm, list_week_tensors_BFM, path_job, list_masks, "P_l", path_fig_channel_2, 1, "LEV", dict_coord_ga = {"NWM":[139, 153], "SWM": [111, 111], "TYR":[208, 124], "ION":[291, 69], "LEV":[444, 48]}, mean_layer=False, list_layers = [], mean_ga="mean_ngh")
-
-
-elif prob_statement == "hovmoller_float":
-    total_float_tensor = torch.load("total_float_tensor.pt")
-    path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-14 10:05:14.974986"
-    path_results_2 = path_job + "/results_training_2_ensemble"
-    list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    path_mean_std_2 = path_results_2 + "/mean_and_std_tensors"
-    path_fig_channel_2 = path_results_2 + "/P_l/20/lrc_0.001/plots_2_final"
-    if not os.path.exists(path_fig_channel_2):
-        os.makedirs(path_fig_channel_2)
-    float_device_tensor_LEV = torch.load("weekly_LEV_mean_float_tensor.pt")
-    float_device_tensor_NWM = torch.load("weekly_NWM_5906990_mean_float_tensor.pt")
-    plot_Hovmoller_real_float(total_float_tensor, path_fig_channel_2, "LEV", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="LEV_order")
-    plot_Hovmoller_real_float(float_device_tensor_LEV, path_fig_channel_2, "NWM", mean_layer=False, list_layers = [], mean_ga=True, tensor_order="NWM_order")
 
 
 if prob_statement == "hovmoller_float":
     total_float_tensor = torch.load("total_float_tensor.pt")
     weekly_total_float_tensor = torch.load("weekly_mean_float_tensor.pt")
-    path_images = "float_plots/weekly_total/"
-    if not os.path.exists(path_images):
-        os.makedirs(path_images)
-    for i in range(250, 280):
-        plt.plot(torch.squeeze(weekly_total_float_tensor[:, i]).flip(0), np.arange(0, 31), linewidth=2.0)
-        plt.savefig(path_images + str(i) + ".png", dpi=100)
-        plt.close()
     path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-02-14 10:05:14.974986"
     path_results_2 = path_job + "/results_training_2_ensemble"
     list_masks = load_land_sea_masks("dataset_training/land_sea_masks/")

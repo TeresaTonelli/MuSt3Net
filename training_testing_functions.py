@@ -4,8 +4,8 @@ import torch
 from convolutional_network import CompletionN
 from normalization_functions import Denormalization
 from losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
-from plot_error import Plot_Error
-from plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
+from CNN_plots.plot_error import Plot_Error
+from CNN_plots.plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
 from utils.utils_general import *
 from utils.utils_dataset_generation import write_list, read_list
 from utils.utils_mask import generate_float_mask
