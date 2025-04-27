@@ -6,7 +6,6 @@ import netCDF4 as nc
 import numpy as np
 import pandas as pd
 import os
-from plot_save_tensor import plot_routine, save_routine, path_directory_save, path_directory_plot
 from hyperparameter import *
 
 import datetime 
