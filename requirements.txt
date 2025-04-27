@@ -1,0 +1,65 @@
+basemap==1.4.1
+basemap-data==1.3.2
+Bottleneck @ file:///croot/bottleneck_1709069899917/work
+Brotli @ file:///croot/brotli-split_1714483155106/work
+certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1725278078093/work/certifi
+cffi @ file:///croot/cffi_1714483155441/work
+cftime @ file:///work/perseverance-python-buildout/croot/cftime_1698867720256/work
+charset-normalizer @ file:///croot/charset-normalizer_1721748349566/work
+click @ file:///home/conda/feedstock_root/build_artifacts/click_1692311806742/work
+contourpy @ file:///work/perseverance-python-buildout/croot/contourpy_1701756524386/work
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+filelock @ file:///work/perseverance-python-buildout/croot/filelock_1701733993137/work
+fonttools @ file:///croot/fonttools_1713551344105/work
+fsspec @ file:///croot/fsspec_1714461537038/work
+idna @ file:///croot/idna_1714398848350/work
+Jinja2 @ file:///croot/jinja2_1716993405101/work
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1714665484399/work
+juliacall @ file:///home/conda/feedstock_root/build_artifacts/pyjuliacall_1714586417819/work
+juliapkg @ file:///home/conda/feedstock_root/build_artifacts/pyjuliapkg_1715581400063/work
+kiwisolver @ file:///work/perseverance-python-buildout/croot/kiwisolver_1698847502605/work
+MarkupSafe @ file:///work/perseverance-python-buildout/croot/markupsafe_1707342994941/work
+matplotlib @ file:///work/perseverance-python-buildout/croot/matplotlib-suite_1698863180732/work
+mkl-fft @ file:///work/perseverance-python-buildout/croot/mkl_fft_1698845673361/work
+mkl-random @ file:///work/perseverance-python-buildout/croot/mkl_random_1698845720894/work
+mkl-service==2.4.0
+mpmath @ file:///work/perseverance-python-buildout/croot/mpmath_1698864994882/work
+netCDF4 @ file:///work/perseverance-python-buildout/croot/netcdf4_1698896112088/work
+networkx @ file:///work/perseverance-python-buildout/croot/networkx_1698865062738/work
+numexpr @ file:///work/perseverance-python-buildout/croot/numexpr_1698871031164/work
+numpy @ file:///croot/numpy_and_numpy_base_1708638617955/work/dist/numpy-1.26.4-cp312-cp312-linux_x86_64.whl#sha256=1d700f51d8b4fa684d858c9e3b56b1656bc5c82b6b79ff08d4e3b491c430059f
+packaging @ file:///croot/packaging_1710807400464/work
+pandas @ file:///croot/pandas_1709590491089/work/dist/pandas-2.2.1-cp312-cp312-linux_x86_64.whl#sha256=5802047a01a8af8f4a2d6aa0e3e9e6a659b7dcb47f027e62c94eab8c10d85ba7
+pillow @ file:///croot/pillow_1714398848491/work
+ply @ file:///work/perseverance-python-buildout/croot/ply_1698846188635/work
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyparsing @ file:///work/perseverance-python-buildout/croot/pyparsing_1698847881454/work
+pyproj==3.6.1
+PyQt5==5.15.10
+PyQt5-sip @ file:///work/perseverance-python-buildout/croot/pyqt-split_1698847927472/work/pyqt_sip
+pyshp==2.3.1
+PySocks @ file:///work/perseverance-python-buildout/croot/pysocks_1698845478203/work
+pysr @ file:///home/conda/feedstock_root/build_artifacts/pysr_1719043941051/work
+python-dateutil @ file:///croot/python-dateutil_1716495738603/work
+pytz @ file:///croot/pytz_1713974312559/work
+PyYAML @ file:///work/perseverance-python-buildout/croot/pyyaml_1698849903511/work
+requests @ file:///croot/requests_1721410876868/work
+scikit-learn @ file:///croot/scikit-learn_1721921875708/work
+scipy @ file:///croot/scipy_1717521478074/work/dist/scipy-1.13.1-cp312-cp312-linux_x86_64.whl#sha256=a60c1bdf983ee297b25e41830d00cc2af50f00bcb47e55578703fef1594ec56e
+seaborn==0.13.2
+semver @ file:///home/conda/feedstock_root/build_artifacts/semver_1696861993140/work
+setuptools==69.5.1
+sip @ file:///work/perseverance-python-buildout/croot/sip_1698846977033/work
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+sympy @ file:///croot/sympy_1701397643339/work
+threadpoolctl @ file:///home/conda/feedstock_root/build_artifacts/threadpoolctl_1714400101435/work
+torch==2.4.0
+torchaudio==2.4.0
+torchvision==0.19.0
+tornado @ file:///croot/tornado_1718740109488/work
+triton==3.0.0
+typing_extensions @ file:///croot/typing_extensions_1715268824938/work
+tzdata @ file:///croot/python-tzdata_1690578112552/work
+unicodedata2 @ file:///croot/unicodedata2_1713212950228/work
+urllib3 @ file:///croot/urllib3_1718912636303/work
+wheel==0.43.0
