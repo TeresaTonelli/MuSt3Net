@@ -6,13 +6,15 @@ import torch
 import pandas as pd
 import os
 import random
+import sys
 
 from data_preprocessing.get_dataset import concatenate_tensors
 from hyperparameter import *
 from utils.utils_general import compute_profile_coordinates, remove_float, fill_tensor_opt
 from utils.utils_dataset_generation import read_list
-from normalization_functions import Denormalization
+from CNN_3DMedSea.normalization_functions import Denormalization
 
+sys.path.append("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
@@ -236,7 +238,7 @@ def re_load_old_float_tensors(tensor_directory, year_week_indexes):
 def re_load_float_input_data(tensor_directory, year_week_indexes):
     """this function loads and computes the old float tensors and prepares them with all the pre-processing useful for the training and testing"""
     input_float_tensors = []
-    land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+    land_sea_masks = load_land_sea_masks("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset_training/land_sea_masks/")
     for i in range(len(year_week_indexes)):
         physic_tensor = torch.load(tensor_directory + "/MODEL/" + str(year_week_indexes[i][0]) + "/final_tensor/physics_vars/datetime_" + str(year_week_indexes[i][1]) + ".pt")[:, :, :-1, :, :]
         biogeoch_float_tensor = torch.load(tensor_directory + "/float/" + str(year_week_indexes[i][0]) + "/final_tensor/P_l/datetime_" + str(year_week_indexes[i][1]) + ".pt")[:, :, :-1, :, :]
@@ -252,7 +254,7 @@ def re_load_float_input_data(tensor_directory, year_week_indexes):
 def re_load_float_input_data_external(tensor_directory, year_week_indexes, year_week_indexes_phys):
     """this function loads and computes the old float tensors and prepares them with all the pre-processing useful for the training and testing"""
     input_float_tensors = []
-    land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
+    land_sea_masks = load_land_sea_masks("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset_training/land_sea_masks/")
     for i in range(len(year_week_indexes)):
         physic_tensor = torch.load(tensor_directory + "/MODEL/" + str(year_week_indexes_phys[i][0]) + "/final_tensor/physics_vars/datetime_" + str(year_week_indexes_phys[i][1]) + ".pt")[:, :, :-1, :, :]
         biogeoch_float_tensor = torch.load(tensor_directory + "/float/" + str(year_week_indexes[i][0]) + "/final_tensor/P_l/datetime_" + str(year_week_indexes[i][1]) + ".pt")[:, :, :-1, :, :]

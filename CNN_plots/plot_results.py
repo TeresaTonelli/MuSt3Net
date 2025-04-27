@@ -1,6 +1,6 @@
-#In this script there are the functions to plot the maps of NN model and profiles of NN models, compared with real distribution of data
-
-
+"""
+Plots of model evaluation on unseen data: maps, profiles and Hovmoller (both training phases) 
+"""
 import numpy as np
 import torch 
 import matplotlib.pyplot as plt

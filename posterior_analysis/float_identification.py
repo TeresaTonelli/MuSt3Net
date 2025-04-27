@@ -1,6 +1,6 @@
-#this script contains all the functions to identify float devices starting from data
-
-
+"""
+Identification of float devices from .nc files
+"""
 import numpy as np
 import torch
 import os

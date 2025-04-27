@@ -1,11 +1,13 @@
-#This script contains the function for the training 1p and training 2p
+"""
+Implementation of the 1 and 2 steps training and testing functions
+"""
 
 import torch
-from convolutional_network import CompletionN
-from normalization_functions import Denormalization
-from losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
+from CNN_3DMedSea.convolutional_network import CompletionN
+from CNN_3DMedSea.normalization_functions import Denormalization
+from CNN_3DMedSea.losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 from CNN_plots.plot_error import Plot_Error
-from CNN_plots.plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_difference_NN_phases, plot_NN_maps_layer_mean
+from CNN_plots.plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_NN_maps_layer_mean
 from utils.utils_general import *
 from utils.utils_dataset_generation import write_list, read_list
 from utils.utils_mask import generate_float_mask
@@ -314,7 +316,6 @@ def testing_2p(biogeoch_var, path_plots_2, years_week_dupl_indexes, biogeoch_tra
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
-            plot_difference_NN_phases(denorm_testing_output_1, denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_diff_test_data, list_float_profiles_coordinates[index_external_testing_2[i]])  
             del test_data_2
             torch.cuda.empty_cache()
     del my_mean_tensor_2

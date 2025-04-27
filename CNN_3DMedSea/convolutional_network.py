@@ -1,5 +1,5 @@
 """
-definition of the COMPLETION NETWORK (fully CNN) that compose the architecture
+Definition of the COMPLETION NETWORK (fully CNN) that compose the architecture
 """
 import torch.nn as nn
 from hyperparameter import *

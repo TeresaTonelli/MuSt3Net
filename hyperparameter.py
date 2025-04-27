@@ -1,5 +1,5 @@
 """
-hyperparameter for the implementation
+Hyperparameter for the CNN-3DMedSea implementation and the 2-step training procedure
 """
 
 batch = 1

@@ -1,6 +1,6 @@
-#In this script we write all the function to generate plots FOR POST-PROCESSING, so the ones that I can recall after the network training 
-
-
+"""
+Plots of model evaluation on unseen data: maps, profiles and Hovmoller (both training phases) 
+"""
 import numpy as np
 import torch 
 import matplotlib.pyplot as plt
@@ -10,8 +10,8 @@ from mpl_toolkits.basemap import Basemap
 import os
 import itertools
 
-from convolutional_network import CompletionN
-from normalization_functions import Denormalization
+from CNN_3DMedSea.convolutional_network import CompletionN
+from CNN_3DMedSea.normalization_functions import Denormalization
 from hyperparameter import * 
 from utils.utils_mask import apply_masks
 from utils.utils_general import compute_mean_layers, compute_profile_mean
@@ -365,7 +365,7 @@ def plot_Hovmoller(list_week_tensors, list_week_tensors_BFM, path_job, list_mask
     axs.set_xticks(np.arange(0, len(list_week_tensors), 1), np.array([i for i in range(len(list_week_tensors))]), rotation=45)
     x_ticks_labels = np.array(["01/2019", "03/2019", "06/2019", "09/2019", "12/2019", "03/2020", "06/2020", "09/2020", "12/2020", "03/2021", "06/2021", "09/2021", "12/2021"])
     #x_ticks_labels = np.array(["09/2022", "12/2022", "03/2023", "06/2023"])
-    #axs.set_xticks(np.arange(0, len(list_week_tensors), 13), x_ticks_labels, rotation=45)
+    axs.set_xticks(np.arange(0, len(list_week_tensors), int(len(list_week_tensors)/len(x_ticks_labels))), x_ticks_labels, rotation=45)
     axs.set_yticks(np.arange(0, 20, 5), np.arange(0, 200, 50))
     axs.set_ylabel(r"depth [$m$]")
     plt.tight_layout()

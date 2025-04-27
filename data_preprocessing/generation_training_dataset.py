@@ -10,7 +10,7 @@ import datetime
 from data_preprocessing.get_dataset import concatenate_tensors, get_list_float_tensor_year_weeks, get_list_model_tensor_year_weeks
 from utils.utils_general import *
 from utils.utils_mask import *
-from normalization_functions import Normalization
+from CNN_3DMedSea.normalization_functions import Normalization
 from utils.utils_dataset_generation import write_list, read_list
 
 

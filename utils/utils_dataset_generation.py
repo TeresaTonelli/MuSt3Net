@@ -1,7 +1,3 @@
-#This script contains the functions fro the generatiorn of the dataset that we need to train our netwprk
-#USEFUL TO SAVE RAM 
-
-
 import numpy as np
 import torch
 import os

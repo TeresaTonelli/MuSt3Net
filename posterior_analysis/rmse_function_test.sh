@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#SBATCH --time=09:59:29
+#SBATCH --time=02:04:59
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 
-#SBATCH --mem=128G
+#SBATCH --mem=16G
 #SBATCH --partition=boost_usr_prod
 
 #SBATCH --output=rmse_computation.%j

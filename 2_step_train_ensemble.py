@@ -1,6 +1,5 @@
 """
-Implementation of the training routine for the 3D CNN with GAN
-- train_dataset : list/array of 5D (or 5D ?) tensor in form (bs, input_channels, D_in, H_in, W_in)
+Implementation of the 2-step training routine for the 3D CNN
 """
 import numpy as np
 import torch.nn as nn
@@ -9,11 +8,11 @@ import matplotlib.pyplot as plt
 import random
 import datetime
 
-from convolutional_network import CompletionN
+from CNN_3DMedSea.convolutional_network import CompletionN
 #from losses import  convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 #from mean_pixel_value import MV_pixel
 #from utils_mask import generate_input_mask, generate_sea_land_mask
-from normalization_functions import Normalization, Denormalization
+from CNN_3DMedSea.normalization_functions import Normalization, Denormalization
 from data_preprocessing.get_dataset import *
 #from plot_error import Plot_Error
 from CNN_plots.plot_results import *
@@ -22,14 +21,14 @@ from utils.utils_general import *
 from data_preprocessing.generation_training_dataset import generate_dataset_phase_2_saving
 from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates, compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
 from utils.utils_dataset_generation import write_list, read_list
-from training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
+from CNN_3DMedSea.training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 2
-end_train_1p = 1
-end_1p = 1
-path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-18 16:23:24.817583" 
+first_run_id = 1
+end_train_1p = 0
+end_1p = 0
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-27 08:25:17.224415" 
 
 
 num_channel = number_channel  
@@ -53,7 +52,7 @@ if first_run_id == 0:
     f_job_dev.write(f"[first_run_id]:{first_run_id:.12f} \n")
     f_job_dev.close()
     n_dupl_per_week = len(os.listdir("dataset_training/total_dataset/P_l/2022/week_1/"))
-    total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1("dataset_training/total_dataset", "P_l", [2019, 2020, 2021, 2022], 1500, n_dupl_per_week)
+    total_dataset, new_transposed_latitudes_coordinates, years_week_dupl_indexes = generate_training_dataset_1("dataset_training/total_dataset", "P_l", [2019], 400, n_dupl_per_week)
     write_list(years_week_dupl_indexes, path_lr + "/ywd_indexes.txt")
     #3a: normalize the dataset
     total_dataset_norm, _, _ = Normalization(total_dataset, "1p", path_results)
@@ -84,8 +83,8 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 400 
-        snaperiod = 50
+        n_epochs_1p = 20 
+        snaperiod = 5
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
