@@ -160,7 +160,7 @@ def RMSE_ensemble_ga(path_job, years_week_indexes, n_ens):
         list_CNN_model[i_ens].load_state_dict(list_checkpoints_CNN[i_ens]['model_state_dict'])
     #start RMSE evaluation
     for i_ens in range(n_ens):
-        for my_ga in list(dict_ga.keys()):
+        for my_ga in ["LEV"]:   #list(dict_ga.keys()):
             loss_ga_season_train, loss_ga_season_test = rmse_single_ga_season(input_dataset_2, list_index_training_2[i_ens], list_index_ext_testing_2[i_ens] + list_index_int_testing_2[i_ens], list_float_tensors, list_float_coordinates, list_CNN_model[i_ens], years_week_indexes, my_ga, "all_seasons", path_mean_std)
             tensor_loss_ga_season_ens[i_ens, 0, list(dict_ga.keys()).index(my_ga)] = float(loss_ga_season_train)
             tensor_loss_ga_season_ens[i_ens, 1, list(dict_ga.keys()).index(my_ga)] = float(loss_ga_season_test)

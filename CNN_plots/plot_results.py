@@ -19,7 +19,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def moving_average(data, window_size):
     if window_size % 2 == 0:
-        window_size += 1  # Ensure window size is odd for symmetry
+        window_size += 1  
     pad_size = window_size // 2
     padded_data = np.pad(data, pad_size, mode='edge')
     cumsum_vec = np.cumsum(np.insert(padded_data, 0, 0))
@@ -112,6 +112,7 @@ def plot_models_profiles_1p(tensor_input_NN, tensor_output_NN_model, tensor_outp
         profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
         profile_tensor_input_NN = moving_average(profile_tensor_input_NN.detach().cpu().numpy(), 3)
         profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
+        profile_tensor_NN_model = np.maximum(profile_tensor_NN_model, 0)
         #plot of profiles
         path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(plot_coordinate[1]) + "_lon_" + str(plot_coordinate[0])
         plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_input_NN.shape[2]), fontsize=6)  
@@ -175,6 +176,7 @@ def comparison_profiles_1_2_phases(tensor_output_float, tensor_output_NN_model, 
                 profile_tensor_NN_model = moving_average(profile_tensor_NN_model.detach().cpu().numpy(), 3)
                 profile_tensor_NN_1_model = moving_average(profile_tensor_NN_1_model.detach().cpu().numpy(), 3)
                 profile_tensor_num_model = moving_average(profile_tensor_num_model.detach().cpu().numpy(), 3)
+                profile_tensor_NN_model = np.maximum(profile_tensor_NN_model, 0)
                 #plots profiles
                 path_fig_channel_coordinates = path_fig_channel + "/lat_" + str(latitude_index) + "_lon_" + str(longitude_index)
                 plt.yticks(depth_levels, resolution[2] * np.arange(0, tensor_output_float.shape[2]), fontsize=6)   

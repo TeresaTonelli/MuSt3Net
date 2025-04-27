@@ -25,9 +25,9 @@ from CNN_3DMedSea.training_testing_functions import training_1p, testing_1p, tra
 
 
 #3 parameters to define the jobs pypeline
-first_run_id = 1
-end_train_1p = 0
-end_1p = 0
+first_run_id = 2
+end_train_1p = 1
+end_1p = 1
 path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-27 08:25:17.224415" 
 
 
@@ -83,8 +83,8 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 20 
-        snaperiod = 5
+        n_epochs_1p = 400 
+        snaperiod = 50
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -97,7 +97,7 @@ if end_1p == 0:
         training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_tensor, my_std_tensor,train_dataset, internal_test_dataset, index_training, index_internal_testing, land_sea_masks, exp_weights, f, f_test, f_job_dev, losses_1p, train_losses_1p, test_losses_1p, model_save_path, path_model, path_losses, path_lr, new_transposed_latitudes_coordinates)
     elif end_train_1p == 1:
         #test 1 phase
-        path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, "P_l", 400, 0, 0.001)
+        path_results, path_mean_std, path_land_sea_masks, path_configuration, path_lr, path_losses, path_model, path_plots = reload_paths_1p(path_job, "P_l", 200, 0, 0.001)
         years_week_dupl_indexes = read_list(path_lr + "/ywd_indexes.txt")
         index_external_testing = read_list(path_lr + "/index_external_testing.txt")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -119,7 +119,7 @@ elif end_1p == 1:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 40  
+    n_epochs_2p = 20  
     snaperiod_2p = 5
     l_r_2p = 0.001
     for i_ens in range(n_ensemble):
