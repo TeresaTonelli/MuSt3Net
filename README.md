@@ -1,6 +1,7 @@
-# ppcon
+# CNN-3DMedSea
 
-Python library for the implementation of CNN-3DMedSea (Convolutional Neural Network for 3D data integration in the Mediterranean Sea)
+Python library for the implementation of CNN-3DMedSea (Convolutional Neural Network for 3D data integration in the Mediterranean Sea). 
+This project developes a CNN to perform model data fusion thorugh an innovative 2-step training pocedure. 
 
 ```bash
 pip install -r requirements.txt 
@@ -38,10 +39,11 @@ To manage the runtime, whoch could overcome 24 hours, the code flow is ruled by 
 ### Data pre-processing
 The input data are concatenation od 3D tensors, representing the 3D distribution of physical variables and chlorophyll. 
 To obtain these tensors starting from netCDF files (.nc), it is sufficient to run the `data_preprocessing/run_data_preprocessing.py` script, in which, for each single variable:
-*  `--make` creates the .npy file in which the 3D distribution of a single variable is saved 
-*  `--` transforms the .npy in a .pt file
-*  `--` interpolates the .pt file in order to reach an higher spatial resolution
-The `dataset_training/...` is sinly a copy of the `dataset_training/`
+*  `--make_dataset_single_var` creates the .npy file in which the 3D distribution of a single variable is saved. The file `--make_dataset_float`does the same for the float measures. 
+*  `--plot_save_tensor` transforms the .npy in a .pt file
+*  `--interpolation` interpolates the .pt file in order to reach an higher spatial resolution; different interpolation functions are implemented for numerical model data and float data. 
+The final tensors are stored in `final_tensor` folder, inside the `dataset` folder, and they are simply a copy of the `interp_tensor` folder. 
+Due to high dimensionality of data and lower computational resources, the tensor data for the 1^{st} training step can be generated through the script `generation_training_dataset` and therefore stored in `dataset_training` folder. 
 
 
 ### Results' plots 
