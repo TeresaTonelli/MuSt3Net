@@ -1,6 +1,7 @@
-#In this script we write the code to perform the interpolation of the input data tensor 
-#The interpolation is made wrt to depths and the variable of interest (physical vars, oxygen, chlorophyll, etc)
-
+"""
+In this script we write the code to perform the interpolation of the input data tensor 
+The interpolation is made wrt to depths and the variable of interest (physical vars, oxygen, chlorophyll, etc)
+"""
 
 import numpy as np
 import torch
@@ -70,8 +71,3 @@ def directory_tensor_interpolation_float(directory_of_tensors, directory_of_inte
         interp_tensor = tensor_interpolation_float(torch.from_numpy(my_tensor))
         torch.save(interp_tensor, directory_of_interp_tensors + "/" + var + "/datetime_" + str(data_time) + ".pt")
     return None
-
-
-#directory_tensor_interpolation("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2020/tensor", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2020/interp_tensor", "P_l")
-#directory_tensor_interpolation("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2020/tensor", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2020/interp_tensor", "soshfldo")
-#directory_tensor_interpolation_float("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/float/2020/tensor", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/float/2020/interp_tensor", "P_l")

@@ -14,12 +14,12 @@ def generate_land_sea_masks(path_saving, biogeoch_var, year):
     """this function generates and saves the land_sea_masks"""
     biogeoch_train_dataset, list_biogeoch_weeks = get_list_model_tensor_year_weeks(biogeoch_var, year)
     biogeoch_train_dataset, list_biogeoch_weeks = re_order_weeks(list_biogeoch_weeks, biogeoch_train_dataset)
-    #generation of land - sea masks
+    #generation of land_sea masks
     land_sea_masks = []
     for i_d in range(int((depth_interval[1] - depth_interval[0]) / resolution[2] + 1) - 1):
         land_sea_mask = generate_sea_land_mask(biogeoch_train_dataset[0], i_d)
         land_sea_masks.append(land_sea_mask)
-    #saves land_sea_masks
+    #saves land_sea masks
     for i in range(len(land_sea_masks)):
         land_sea_path = path_saving + "/land_sea_masks/"
         torch.save(land_sea_masks[i], land_sea_path + "depth_" + str(i) + ".pt")
@@ -58,6 +58,7 @@ def read_list(file_dir):
     
 
 def read_txt_file(file_dir):
+    """this function reads elements from a txt file"""
     with open(file_dir, 'r') as file:
         lines = file.readlines()
     for i_l in range(len(lines)):

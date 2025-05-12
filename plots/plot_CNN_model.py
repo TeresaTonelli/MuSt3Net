@@ -387,10 +387,8 @@ def plot_Hovmoller_real_float(float_device_tensor, path_plots, ga, mean_layer=Fa
     elif tensor_order == "LEV_order":
         Hovmoller_tensor = torch.cat((float_device_tensor[:, 46:52], float_device_tensor[:, :46]), axis = 1)
     elif tensor_order == "NWM_order":
-        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292],float_device_tensor[:, 265:275], float_device_tensor[:, 479:483], float_device_tensor[:, 275:290], float_device_tensor[:, 483:486]), axis=1)
-        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 475:477], float_device_tensor[:, 292:302], + float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 275:276], float_device_tensor[:, 288:290], float_device_tensor[:, 279:287], float_device_tensor[:, 274:275], float_device_tensor[:, 479:483], float_device_tensor[:, 276:277]), axis=1)
-        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 100:103], float_device_tensor[:, 475:477], float_device_tensor[:, 90:96], float_device_tensor[:, 97:100]), axis=1)
-        Hovmoller_tensor = torch.cat((float_device_tensor[:, 108:111], float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 90:96], float_device_tensor[:, 97:99], float_device_tensor[:, 102:108]), axis=1)
+        Hovmoller_tensor = torch.cat((float_device_tensor[:, 286:292], float_device_tensor[:, :286]), axis=1)
+        #Hovmoller_tensor = torch.cat((float_device_tensor[:, 108:111], float_device_tensor[:, 288:290], float_device_tensor[:, 276:277], float_device_tensor[:, 292:302], float_device_tensor[:, 290:292], float_device_tensor[:, 265:273], float_device_tensor[:, 279:287], float_device_tensor[:, 481:483], float_device_tensor[:, 88:90], float_device_tensor[:, 90:96], float_device_tensor[:, 97:99], float_device_tensor[:, 102:108]), axis=1)
     if apply_prof_smooting == True:
         for i in range(Hovmoller_tensor.shape[1]):
             Hovmoller_tensor[:, i] = torch.from_numpy(moving_average(Hovmoller_tensor[:,i].detach().cpu().numpy(), 5))

@@ -7,7 +7,7 @@ not_used_scripts/
 old_scripts/
 script_to_remove_from_github/
 
-plots/
+old_plots/
 
 dataset/
 dataset_training/
@@ -43,3 +43,12 @@ test_float_plots.1*
 
 #images
 *.png
+
+
+
+#plot files
+*test_plot_results.py 
+*test_plot_results.sh
+
+#float files
+float_identification.py

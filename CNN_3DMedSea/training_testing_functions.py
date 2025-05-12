@@ -6,8 +6,8 @@ import torch
 from CNN_3DMedSea.convolutional_network import CompletionN
 from CNN_3DMedSea.normalization_functions import Denormalization
 from CNN_3DMedSea.losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
-from CNN_plots.plot_error import Plot_Error
-from CNN_plots.plot_results import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_NN_maps_layer_mean
+from plots.plot_error import Plot_Error
+from plots.plot_CNN_output import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_NN_maps_layer_mean
 from utils.utils_general import *
 from utils.utils_dataset_generation import write_list, read_list
 from utils.utils_mask import generate_float_mask
@@ -94,25 +94,6 @@ def training_1p(n_epochs_1p, snaperiod, l_r, years_week_dupl_indexes,  my_mean_t
                     losses_1_c_test.append(loss_1c_test.cpu())
                     print(f"[EPOCH]: {epoch + 1}, [TEST LOSS]: {loss_1c_test.item():.12f}")
                     f_test.write(f"[EPOCH]: {epoch + 1}, [LOSS]: {loss_1c_test.item():.12f} \n")
-                    #PARTE NUOVA PER VEDERE ALCUNI PROFILI PARZIALI
-                    #year, week = years_week_dupl_indexes[index_internal_test[i_test]][0], years_week_dupl_indexes[index_internal_test[i_test]][1]
-                    #print("year and week", [year, week])
-                    #if week < 21 and year == 2019:  #così non salvo tutti tutti i profili
-                    #    path_partial_profiles = path_lr + "/partial_plots"
-                    #    if not os.path.exists(path_partial_profiles):
-                    #        os.makedirs(path_partial_profiles)
-                    #    path_partial_profiles_epoch = path_partial_profiles + "/epoch_" + str(epoch + 1)
-                    #    if not os.path.exists(path_partial_profiles_epoch):
-                    #        os.makedirs(path_partial_profiles_epoch)
-                    #    path_partial_profiles_1p = path_partial_profiles_epoch + "/partial_test_" + str(year) + "_week_" + str(week)
-                    #    if not os.path.exists(path_partial_profiles_1p):
-                    #        os.makedirs(path_partial_profiles_1p)
-                    #    plot_models_profiles_1p(torch.unsqueeze(biog_input[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), denormalized_testing_output, torch.unsqueeze(biog_input[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
-                    #                "P_l", path_partial_profiles_1p, transposed_lat_coordinates[index_internal_test[i_test]]) 
-                    #del test_data
-                    #del denormalized_testing_output
-                    #del biog_input
-                    #torch.cuda.empty_cache()
                 test_loss = np.mean(np.array(losses_1_c_test))      
                 test_losses_1p.append(test_loss)
         if (epoch+1) % snaperiod == 0: 
@@ -168,8 +149,6 @@ def testing_1p(biogeoch_var, path_plots, years_week_dupl_indexes, model_1p, exte
                 os.makedirs(path_BFM_mean_layer_test_data)
             plot_models_profiles_1p(torch.unsqueeze(denorm_testing_input[:, 6, :, :, :], 1), denorm_testing_output, torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1),  
                                 var, path_profiles_test_data, transposed_lat_coordinates[index_external_testing[i]]) 
-            #plot_NN_maps(denorm_testing_output, land_sea_masks, var, path_NN_reconstruction_test_data)
-            #plot_NN_maps(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1).to(device), land_sea_masks, var, path_BFM_reconstruction_test_data)
             plot_NN_maps_layer_mean(denorm_testing_output, land_sea_masks, var, path_NN_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             plot_NN_maps_layer_mean(torch.unsqueeze(load_old_total_tensor("dataset_training/old_total_dataset/", index_external_testing[i], years_week_dupl_indexes)[:, :, :-1, :, 1:-1][:, 6, :, :, :], 1), land_sea_masks, var, path_BFM_mean_layer_test_data, [0, 40, 80, 120, 180, 300])
             #remove all the tensors from the gpu 
@@ -333,8 +312,8 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
     model_2p.to(device)
     model_2p.eval()
     test_loss_list = []
-    test_loss_list_winter = []
-    test_loss_list_summer = []
+    #test_loss_list_winter = []
+    #test_loss_list_summer = []
     with torch.no_grad():
         for i in range(len(external_test_dataset_2)):
             test_data_2 = external_test_dataset_2[i]
@@ -351,27 +330,27 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
             test_loss_list.append(test_loss)
             #compute the week and write the loss into the file of the corresponding season
             week = years_week_dupl_indexes[i][1]
-            if week < 14:
-                test_loss_list_winter.append(test_loss)
-            else:
-                test_loss_list_summer.append(test_loss)
+            #if week < 14:
+            #    test_loss_list_winter.append(test_loss)
+            #else:
+            #    test_loss_list_summer.append(test_loss)
             path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_profiles_test_data_NN_1):
                 os.makedirs(path_profiles_test_data_NN_1)
             path_NN_reconstruction_test_data = path_NN_reconstruction + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_reconstruction_test_data):
                 os.makedirs(path_NN_reconstruction_test_data)
-            path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
-            if not os.path.exists(path_NN_diff_season_test_data):
-                os.makedirs(path_NN_diff_season_test_data)
+            #path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
+            #if not os.path.exists(path_NN_diff_season_test_data):
+            #    os.makedirs(path_NN_diff_season_test_data)
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
             del test_data_2
             torch.cuda.empty_cache()
     write_list(test_loss_list, path_losses_2p + "/test_loss_final.txt")
-    write_list(test_loss_list_winter, path_losses_2p + "/test_loss_final_winter.txt")
-    write_list(test_loss_list_summer, path_losses_2p + "/test_loss_final_summer.txt")
+    #write_list(test_loss_list_winter, path_losses_2p + "/test_loss_final_winter.txt")
+    #write_list(test_loss_list_summer, path_losses_2p + "/test_loss_final_summer.txt")
     del my_mean_tensor_2
     del my_std_tensor_2
     torch.cuda.empty_cache()

@@ -10,9 +10,9 @@ pip install -r requirements.txt
 ## Code's structure
 The code is organized as follows:
 * `--CNN_3DMedSea` contains the functions for the implementation of the CNN architecture and for the 2-step training procedure
-* `--CNN_plots` contains the functions to generate the plots
+* `--plots` contains the functions to generate the plots
 * `--data_preprocessing` contains the functions to generate the input data (3D tensors for training the CNN)
-* `--posterior_analysis` contain the funtions to assess the model results (i.e. RMSE computation)
+* `--RMSE_computation` contain the funtions to compute the RMSE to assess the model results
 * `--utils` contains all the auxiliary functions for models' training and validation
 
 
@@ -59,10 +59,10 @@ Different plots are used for this purpose, in particular:
 
 
 
-### Posterior analysis
-To asses the result quality, the plots are coupled with the computation of the root mean square error (RMSE) and the float identification (for the Hovmoller plots). 
+### RMSE computation
+To asses the result quality, the plots are coupled with the computation of the root mean square error (RMSE). 
 
-The `posterior_analysis/rmse_function_test.sh` runs the `posterior_analysis/rmse_function_test.py`script, which computes the RMSE with respect to different geographical areas (`posterior_analysis/rmse_functions.RMSE_ensemble_ga`) and the RMSE with respect to different seasons (`posterior_analysis/rmse_functions.RMSE_ensemble_season`), together with the functions to identify the float devices which generates a specific profile (`posterior_analysis/float_identification.single_float_device_identifier` and `posterior_analysis/float_identification.float_device_identifier`). 
+The `RMSE_computation/rmse_function_test.sh` runs the `RMSE_computation/rmse_function_test.py`script, which computes the RMSE with respect to different geographical areas (`RMSE_compiutation/rmse_functions.RMSE_ensemble_ga`) and the RMSE with respect to different seasons (`RMSE_computation/rmse_functions.RMSE_ensemble_season`). 
 
 
 

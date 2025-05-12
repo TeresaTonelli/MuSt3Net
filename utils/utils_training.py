@@ -1,6 +1,3 @@
-#In this script we write all the functions useful for preparing data from training 1
-
-
 import numpy as np
 import torch
 import pandas as pd
@@ -274,30 +271,20 @@ def generate_training_dataset_1(tensors_directory, biogeoch_var, years, n, n_dup
     transposed_latitudes_coordinates = []
     years_week_dupl_indexes = []
     for year in years:
-        #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
         week_indexes = generate_random_week_indexes_winter_weighted(desired_n_tensor_per_year, 52, int(desired_n_tensor_per_year / 4), 13)
-        #week_indexes = generate_random_week_indexes_winter_only(52, int(9 * desired_n_tensor_per_year / 10), 13)
         week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
-        #for each week, sample k duplicates, where k is the element is the previous list refered to that week
         duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
-        #build a unique list of week and duplicates indexes
         week_dupl_indexes = [[i+1, duplicates_indexes[i][j]] for i in range(len(week_indexes)) for j in range(len(duplicates_indexes[i]))]
-        #now, load the tensor realtive to the sampled year, week and duplicate, and put inside total_dataset list
         total_year_dataset = load_tensors(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #modify the winter tensors modifying its mean field value from 0.15 to 0.075
         for i_w_d in range(len(week_dupl_indexes)):
             if int(week_dupl_indexes[i_w_d][0]) < 14:
                 total_year_dataset[i_w_d][total_year_dataset[i_w_d] == 0.15] = 0.075   
-        #change the mean from a fixed value to the mean between chl values of the current week  
         for i_w_d in range(len(week_dupl_indexes)):
             chl_mask = (total_year_dataset[i_w_d] != 0) & (total_year_dataset[i_w_d] != 0.15)
             mean_chl_value = total_year_dataset[i_w_d][chl_mask].float().mean()
             total_year_dataset[i_w_d][total_year_dataset[i_w_d] == 0.15] = mean_chl_value
-        #now, load the transposed latitudes coordinates
         transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #now modifies the indexes relative to week and duplicates, adding the year
         year_week_dupl_indexes = add_year_indexes(year, week_dupl_indexes)
-        #extend the result of a specific year at the end of the for loop iteration
         total_dataset.extend(total_year_dataset)
         transposed_latitudes_coordinates.extend(transposed_year_latitudes_coordinates)
         years_week_dupl_indexes.extend(year_week_dupl_indexes)
@@ -312,21 +299,14 @@ def generate_training_dataset_1_winter(tensors_directory, biogeoch_var, years, n
     transposed_latitudes_coordinates = []
     years_week_dupl_indexes = []
     for year in years:
-        #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
         week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 13)  
         week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
-        #for each week, sample k duplicates, where k is the element is the previous list refered to that week
         duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
-        #build a unique list of week and duplicates indexes
         week_dupl_indexes = [[i+1, duplicates_indexes[i][j]] for i in range(len(week_indexes)) for j in range(len(duplicates_indexes[i]))]
-        #now, load the tensor realtive to the sampled year, week and duplicate, and put inside total_dataset list
         total_year_dataset = load_tensors(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #modify the mean field value of these tensors --> reduce it from 0.15 to 0.075
         for tensor in total_year_dataset:
             tensor[tensor == 0.15] = 0.075
-        #now, load the transposed latitudes coordinates
         transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #now modifies the indexes relative to week and duplicates, adding the year
         year_week_dupl_indexes = add_year_indexes(year, week_dupl_indexes)
         total_dataset.extend(total_year_dataset)
         transposed_latitudes_coordinates.extend(transposed_year_latitudes_coordinates)
@@ -341,18 +321,12 @@ def generate_training_dataset_1_summer(tensors_directory, biogeoch_var, years, n
     transposed_latitudes_coordinates = []
     years_week_dupl_indexes = []
     for year in years:
-        #generate a list of k (k = n week of a specific year) random number whose sum is = n_year
         week_indexes = generate_random_week_indexes(desired_n_tensor_per_year, 39)  
         week_indexes = [int(week_indexes[i]) for i in range(len(week_indexes))]
-        #for each week, sample k duplicates, where k is the element is the previous list refered to that week
         duplicates_indexes = generate_random_duplicates_indexes(week_indexes, n_dupl_per_week)
-        #build a unique list of week and duplicates indexes
         week_dupl_indexes = [[13+i+1, duplicates_indexes[i][j]] for i in range(len(week_indexes)) for j in range(len(duplicates_indexes[i]))]
-        #now, load the tensor realtive to the sampled year, week and duplicate, and put inside total_dataset list
         total_year_dataset = load_tensors(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #now, load the transposed latitudes coordinates
         transposed_year_latitudes_coordinates = load_transp_lat_coordinates(tensors_directory + "/" + str(biogeoch_var) + "/" + str(year) + "/", week_dupl_indexes)
-        #now modifies the indexes relative to week and duplicates, adding the year
         year_week_dupl_indexes = add_year_indexes(year, week_dupl_indexes)
         total_dataset.extend(total_year_dataset)
         transposed_latitudes_coordinates.extend(transposed_year_latitudes_coordinates)
@@ -417,7 +391,6 @@ def compute_3D_ensemble_mean_std(test_data, list_ensemble_models, path_mean_std)
             test_output = ens_model(test_data.float())
             denorm_test_output = Denormalization(test_output, mean_tensor_2, std_tensor_2)
             list_models_outputs.append(denorm_test_output)
-    #compute the mean of the n_ensemble output tensors
     stacked_tensor_outputs = torch.stack([list_models_outputs[i_ens] for i_ens in range(len(list_ensemble_models))])
     tensor_mean = torch.mean(stacked_tensor_outputs, dim=0)
     tensor_std = torch.std(stacked_tensor_outputs, dim=0)    

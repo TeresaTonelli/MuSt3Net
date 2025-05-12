@@ -1,5 +1,3 @@
-#In this script we build teh masks for the float biogeochemical data
-
 import numpy as np
 import torch
 import random

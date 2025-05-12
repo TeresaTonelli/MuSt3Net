@@ -9,15 +9,10 @@ import random
 import datetime
 
 from CNN_3DMedSea.convolutional_network import CompletionN
-#from losses import  convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
-#from mean_pixel_value import MV_pixel
-#from utils_mask import generate_input_mask, generate_sea_land_mask
 from CNN_3DMedSea.normalization_functions import Normalization, Denormalization
 from data_preprocessing.get_dataset import *
-#from plot_error import Plot_Error
-from CNN_plots.plot_results import *
+from plots.plot_CNN_output import *
 from utils.utils_general import *
-#from utils_mask import generate_float_mask, compute_exponential_weights
 from data_preprocessing.generation_training_dataset import generate_dataset_phase_2_saving
 from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates, compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
 from utils.utils_dataset_generation import write_list, read_list
@@ -28,7 +23,7 @@ from CNN_3DMedSea.training_testing_functions import training_1p, testing_1p, tra
 first_run_id = 2
 end_train_1p = 1
 end_1p = 1
-path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-04-27 08:25:17.224415" 
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-05-12 12:34:04.283759" 
 
 
 num_channel = number_channel  
@@ -83,8 +78,8 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 400 
-        snaperiod = 50
+        n_epochs_1p = 20 
+        snaperiod = 5
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
         my_mean_tensor = torch.unsqueeze(torch.load(path_mean_std + "/mean_tensor.pt")[:, 6, :, :, :], 1).to(device)
@@ -193,17 +188,17 @@ elif end_1p == 1:
                 mismatch = True
         if not mismatch:
             print("All model parameters match exactly!")
-    #1a approach: 
+    #compute ensemble mean and std: 
     test_ensemble_mean = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
     test_ensemble_std = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
-    #1b approach:
-    test_ensemble_mean_winter = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
-    test_ensemble_std_winter = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
-    test_ensemble_mean_summer = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
-    test_ensemble_std_summer = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
-    #2 approach:
-    test_data_winter = []
-    test_data_summer = []
+    #compute ensemble mean and std per season:
+    #test_ensemble_mean_winter = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
+    #test_ensemble_std_winter = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
+    #test_ensemble_mean_summer = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
+    #test_ensemble_std_summer = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
+    #plot of phase 2 with ensemble technique:
+    #test_data_winter = []
+    #test_data_summer = []
     path_ensemble_plots = path_lr_2 + "/plots_ensemble"
     if not os.path.exists(path_ensemble_plots):
         os.makedirs(path_ensemble_plots)

@@ -113,8 +113,3 @@ def save_tensors_directory(kindof, tensors_directory, year_interval, flag, var, 
         tensor_considered = np.load(tensors_directory + list_tensors[j])
         tensor_considered = torch.from_numpy(tensor_considered)
         Save_Tensor(kindof, tensor_considered, time_considered, flag, year_min, var, path_directory_save)
-
-
-
-
-#save_tensors_directory("model", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/MODEL/2023/saved_parallelepiped_physics_single/votemper/", (2023, 2024), "t", "votemper", "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/dataset/")

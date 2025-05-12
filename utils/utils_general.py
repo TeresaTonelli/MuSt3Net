@@ -1,6 +1,3 @@
-#This script contains all the functions not irectly related to neural networks architecture, but necessary for the algorithm of neural networks
-
-
 import numpy as np
 import torch 
 import random
