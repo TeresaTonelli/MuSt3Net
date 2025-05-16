@@ -312,8 +312,6 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
     model_2p.to(device)
     model_2p.eval()
     test_loss_list = []
-    #test_loss_list_winter = []
-    #test_loss_list_summer = []
     with torch.no_grad():
         for i in range(len(external_test_dataset_2)):
             test_data_2 = external_test_dataset_2[i]
@@ -330,27 +328,18 @@ def testing_2p_ensemble(biogeoch_var, path_plots_2, years_week_dupl_indexes, bio
             test_loss_list.append(test_loss)
             #compute the week and write the loss into the file of the corresponding season
             week = years_week_dupl_indexes[i][1]
-            #if week < 14:
-            #    test_loss_list_winter.append(test_loss)
-            #else:
-            #    test_loss_list_summer.append(test_loss)
             path_profiles_test_data_NN_1 = path_profiles_with_NN_1 + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_profiles_test_data_NN_1):
                 os.makedirs(path_profiles_test_data_NN_1)
             path_NN_reconstruction_test_data = path_NN_reconstruction + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
             if not os.path.exists(path_NN_reconstruction_test_data):
                 os.makedirs(path_NN_reconstruction_test_data)
-            #path_NN_diff_season_test_data = path_NN_phases_diff_season + "/year_" + str(years_week_dupl_indexes[index_external_testing_2[i]][0]) + "_week_" + str(years_week_dupl_indexes[index_external_testing_2[i]][1])
-            #if not os.path.exists(path_NN_diff_season_test_data):
-            #    os.makedirs(path_NN_diff_season_test_data)
             comparison_profiles_1_2_phases(torch.unsqueeze(old_float_total_dataset[index_external_testing_2[i]][:, 6, :, :, :], 1) , denorm_testing_output_2, biogeoch_train_dataset[i][:, :, :-1, :, 1:-1], denorm_testing_output_1,
                                 biogeoch_var, path_profiles_test_data_NN_1)
             plot_NN_maps(denorm_testing_output_2, land_sea_masks, biogeoch_var, path_NN_reconstruction_test_data)
             del test_data_2
             torch.cuda.empty_cache()
     write_list(test_loss_list, path_losses_2p + "/test_loss_final.txt")
-    #write_list(test_loss_list_winter, path_losses_2p + "/test_loss_final_winter.txt")
-    #write_list(test_loss_list_summer, path_losses_2p + "/test_loss_final_summer.txt")
     del my_mean_tensor_2
     del my_std_tensor_2
     torch.cuda.empty_cache()
