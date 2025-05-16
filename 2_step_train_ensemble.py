@@ -78,7 +78,7 @@ elif first_run_id == 1:
 if end_1p == 0:
     if end_train_1p == 0:
         #train 1 phase
-        n_epochs_1p = 20 
+        n_epochs_1p = 400
         snaperiod = 5
         l_r = 0.001
         f, f_test = open(path_losses + "/train_loss.txt", "w+"), open(path_losses + "/test_loss.txt", "w+")
@@ -114,7 +114,7 @@ elif end_1p == 1:
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
     path_results_2, path_configuration_2, path_mean_std_2, path_lr_2, paths_ensemble_models = prepare_paths_2_ensemble(path_job, "P_l", 20, 0, 0.001, n_ensemble)
     land_sea_masks = load_land_sea_masks("dataset_training/land_sea_masks/")
-    n_epochs_2p = 20  
+    n_epochs_2p = 40  
     snaperiod_2p = 5
     l_r_2p = 0.001
     for i_ens in range(n_ensemble):
