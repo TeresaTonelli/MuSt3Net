@@ -24,10 +24,10 @@ sbatch ./2_step_train_ensemble.sh
 ```
 
 The .sh script run the .py script, which is organized as follows: 
-* it downloads the data from the dataset_training directory and it uses the function training_1p (`--training_testing_function.training_1p`) to emulate the BFM model 
-* it uses the function testing_1p (`--training_testing_function.testing_1p`) to test the quality of the BFM emulation on the test dataset
-* it downloads the data from the dataset_training directory and the model_1p results and it uses the function training_2p (`--training_testing_function.training_2p`) to integrate Argo-floats
-*  it uses the function testing_2p_ensemble (`--training_testing_function.testing_2p_ensemble`) to test the quality of the integration on the test dataset
+* it downloads the data from the dataset_training directory and it uses the function training_1p (`--MuSt3Net/training_testing_function.training_1p`) to emulate the BFM model 
+* it uses the function testing_1p (`--MuSt3Net/training_testing_function.testing_1p`) to test the quality of the BFM emulation on the test dataset
+* it downloads the data from the dataset_training directory and the model_1p results and it uses the function training_2p (`--MuSt3Net/training_testing_function.training_2p`) to integrate Argo-floats
+*  it uses the function testing_2p_ensemble (`--MuSt3Net/training_testing_function.testing_2p_ensemble`) to test the quality of the integration on the test dataset
 
 To manage the runtime, which could exceed 24 hours, the code flow is ruled by 3 binary parameters
 *  `--first_run_id` is the parameter which identifies the first run of the job; it is useful to correctly download data.
