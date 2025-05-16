@@ -13,9 +13,7 @@ def concatenate_tensors(physic_tensor, biogeochemical_tensor, axis=1):
 
 
 def get_list_float_tensor_year_weeks(var, year):
-    """
-    created a list containing the my_tensor representing the FLOAT information uploaded for a specific year
-    """
+    """created a list containing the my_tensor representing the FLOAT information uploaded for a specific year"""
     list_float_tensor = []
     directory_float = directory_dataset + 'float/'
     directory_year = directory_float + str(year) + "/"
@@ -32,9 +30,7 @@ def get_list_float_tensor_year_weeks(var, year):
 
 
 def get_list_model_tensor_year_weeks(var, year):
-    """
-    created a list containing the my_tensor representing the MODEL information uploaded for a specific year
-    """
+    """created a list containing the my_tensor representing the MODEL information uploaded for a specific year"""
     list_model_tensor = []
     directory_model = directory_dataset + 'MODEL/'
     directory_year = directory_model + str(year) + "/"

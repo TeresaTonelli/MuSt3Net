@@ -30,11 +30,9 @@ def tensor_interpolation(tensor):
 
 
 def tensor_interpolation_float(tensor):
-    """this function interpolates the variables in the missing depths"""
-    """it works with a resolution of at most 5 meters (not higher, as 2 meters)"""
+    """this function interpolates the variables in the missing depths, with a resolution of at most 5 meters (not higher)"""
     interp_tensor = torch.clone(tensor)
-    index_depths = np.arange(0, tensor.shape[2])
-    #select the coordinate in which there is the float measure: 
+    index_depths = np.arange(0, tensor.shape[2]) 
     for i_h in range(tensor.shape[3]):
         for i_w in range(tensor.shape[4]):
             if torch.count_nonzero(tensor[:, :, :, i_h, i_w]) > 20:

@@ -1,5 +1,6 @@
-#This script contains the functions fro the generatiorn of the dataset that we need to train our netwprk
-#USEFUL TO SAVE RAM 
+"""
+This script contains the functions for the generation of the training dataset (for both phase 1 and 2)
+""" 
 
 
 import numpy as np
