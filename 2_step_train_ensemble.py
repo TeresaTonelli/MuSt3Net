@@ -192,13 +192,6 @@ elif end_1p == 1:
     test_ensemble_mean = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
     test_ensemble_std = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final.txt" for i_ens in range(n_ensemble)])
     #compute ensemble mean and std per season:
-    #test_ensemble_mean_winter = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
-    #test_ensemble_std_winter = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_winter.txt" for i_ens in range(n_ensemble)])
-    #test_ensemble_mean_summer = compute_ensemble_mean([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
-    #test_ensemble_std_summer = compute_ensemble_std([paths_ensemble_models[i_ens] + "/losses" + "/test_loss_final_summer.txt" for i_ens in range(n_ensemble)])
-    #plot of phase 2 with ensemble technique:
-    #test_data_winter = []
-    #test_data_summer = []
     path_ensemble_plots = path_lr_2 + "/plots_ensemble"
     if not os.path.exists(path_ensemble_plots):
         os.makedirs(path_ensemble_plots)
