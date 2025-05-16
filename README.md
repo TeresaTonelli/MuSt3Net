@@ -1,6 +1,6 @@
-# CNN-3DMedSea
+# MuSt3Net
 
-Python library for the implementation of CNN-3DMedSea (Convolutional Neural Network for 3D data integration in the Mediterranean Sea). 
+Python library for the implementation of MuSt3Net (Multiple Steps 3D Convolutional Neural Network data integration). 
 This project developes a CNN to perform model data fusion thorugh an innovative 2-step training pocedure. 
 
 ```bash
@@ -9,15 +9,15 @@ pip install -r requirements.txt
 
 ## Code's structure
 The code is organized as follows:
-* `--CNN_3DMedSea` contains the functions for the implementation of the CNN architecture and for the 2-step training procedure
+* `--MuSt3Net` contains the functions for the implementation of the CNN architecture and for the 2-step training procedure
 * `--plots` contains the functions to generate the plots
 * `--data_preprocessing` contains the functions to generate the input data (3D tensors for training the CNN)
 * `--RMSE_computation` contain the funtions to compute the RMSE to assess the model results
 * `--utils` contains all the auxiliary functions for models' training and validation
 
 
-### Training CNN-3DMedSea
-To train the CNN-3DMedSea model, it is sufficient to run the 2_step_train_ensemble.py script:
+### Training MuSt3Net
+To train the MuSt3Net model, it is sufficient to run the 2_step_train_ensemble.py script:
 
 ```bash
 sbatch ./2_step_train_ensemble.sh 
@@ -52,8 +52,8 @@ The results, along with the trained models, will be automatically saved in the d
 Different plots are used for this purpose, in particular: 
 * `--maps 1p` are the maps which compares the 1^{st} training step results with the BFM predictions
 * `--maps 2p` are the maps which shows the chlorophyll 3D maps after the data integration with ARGO floats
-* `--profiles 1p` are the plots which compares the same profiles computed by the CNN-3DMedSea after the 1^{st} training step and the BFM one
-* `--profiles 2p` are the plots which compares the same profiles computed by the CNN-3DMedSea after the 2^{nd} training step and the real ARGO float measure
+* `--profiles 1p` are the plots which compares the same profiles computed by the MuSt3Net after the 1^{st} training step and the BFM one
+* `--profiles 2p` are the plots which compares the same profiles computed by the MuSt3Net after the 2^{nd} training step and the real ARGO float measure
 * `--hovmoller` are the plots which show the temporal behavior of the predicted chlorophyll
 * `--hovmoller_external` are the plots which show the temporal behavior of the predicted chlorophyll on unseen float data
 
@@ -68,4 +68,4 @@ The `RMSE_computation/rmse_function_test.sh` runs the `RMSE_computation/rmse_fun
 
 ### Modifying the Model Architecture
 To apply the same architecture for the prediction of other biogeocehmical variables, it could be useful to also modify the model architecture, for example, adding or removing some convolutional layers. The default architectures are located in:
-* `CNN_3DMedSea/convolutional_network.py`.
+* `MuSt3Net/convolutional_network.py`.

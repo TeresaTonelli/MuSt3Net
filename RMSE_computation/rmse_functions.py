@@ -6,10 +6,10 @@ import torch
 import os
 import itertools
 
-from CNN_3DMedSea.convolutional_network import CompletionN
+from MuSt3Net.convolutional_network import CompletionN
 from hyperparameter import *
-from CNN_3DMedSea.losses import convolutional_network_float_exp_weighted_loss
-from CNN_3DMedSea.normalization_functions import Normalization, tmp_Normalization, Denormalization
+from MuSt3Net.losses import convolutional_network_float_exp_weighted_loss
+from MuSt3Net.normalization_functions import Normalization, tmp_Normalization, Denormalization
 from utils.utils_general import transform_latitude_index, transform_longitude_index, compute_profile_coordinates
 from utils.utils_dataset_generation import write_list, read_list
 from utils.utils_mask import generate_float_mask

@@ -10,8 +10,8 @@ from mpl_toolkits.basemap import Basemap
 import os
 import itertools
 
-from CNN_3DMedSea.convolutional_network import CompletionN
-from CNN_3DMedSea.normalization_functions import Denormalization
+from MuSt3Net.convolutional_network import CompletionN
+from MuSt3Net.normalization_functions import Denormalization
 from hyperparameter import * 
 from utils.utils_mask import apply_masks
 from utils.utils_general import compute_mean_layers, compute_profile_mean

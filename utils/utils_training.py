@@ -9,7 +9,7 @@ from data_preprocessing.get_dataset import concatenate_tensors
 from hyperparameter import *
 from utils.utils_general import compute_profile_coordinates, remove_float, fill_tensor_opt
 from utils.utils_dataset_generation import read_list
-from CNN_3DMedSea.normalization_functions import Denormalization
+from MuSt3Net.normalization_functions import Denormalization
 
 sys.path.append("/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

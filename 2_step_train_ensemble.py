@@ -8,22 +8,22 @@ import matplotlib.pyplot as plt
 import random
 import datetime
 
-from CNN_3DMedSea.convolutional_network import CompletionN
-from CNN_3DMedSea.normalization_functions import Normalization, Denormalization
+from MuSt3Net.convolutional_network import CompletionN
+from MuSt3Net.normalization_functions import Normalization, Denormalization
 from data_preprocessing.get_dataset import *
-from plots.plot_CNN_output import *
+from plots.plot_MuSt3Net_output import *
 from utils.utils_general import *
 from data_preprocessing.generation_training_dataset import generate_dataset_phase_2_saving
 from utils.utils_training import prepare_paths, reload_paths_1p, prepare_paths_2_ensemble, generate_training_dataset_1, split_train_test_data, load_land_sea_masks, load_old_total_tensor, re_load_tensors, recreate_train_test_datasets, re_load_transp_lat_coordinates, compute_ensemble_mean, compute_ensemble_std, compute_3D_ensemble_mean_std
 from utils.utils_dataset_generation import write_list, read_list
-from CNN_3DMedSea.training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
+from MuSt3Net.training_testing_functions import training_1p, testing_1p, training_2p, testing_2p_ensemble
 
 
 #3 parameters to define the jobs pypeline
 first_run_id = 2
 end_train_1p = 1
 end_1p = 1
-path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-05-12 12:34:04.283759" 
+path_job = "/leonardo_work/OGS23_PRACE_IT_0/ttonelli/CNN_reconstruction_final_resolution/results_job_2025-05-16 10:21:53.115808" 
 
 
 num_channel = number_channel  

@@ -3,11 +3,11 @@ Implementation of the 1 and 2 steps training and testing functions
 """
 
 import torch
-from CNN_3DMedSea.convolutional_network import CompletionN
-from CNN_3DMedSea.normalization_functions import Denormalization
-from CNN_3DMedSea.losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
+from MuSt3Net.convolutional_network import CompletionN
+from MuSt3Net.normalization_functions import Denormalization
+from MuSt3Net.losses import convolutional_network_exp_weighted_loss, convolutional_network_float_exp_weighted_loss
 from plots.plot_error import Plot_Error
-from plots.plot_CNN_output import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_NN_maps_layer_mean
+from plots.plot_MuSt3Net_output import plot_models_profiles_1p, plot_NN_maps, comparison_profiles_1_2_phases, plot_NN_maps_layer_mean
 from utils.utils_general import *
 from utils.utils_dataset_generation import write_list, read_list
 from utils.utils_mask import generate_float_mask
