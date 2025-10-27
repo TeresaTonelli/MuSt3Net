@@ -69,3 +69,7 @@ The `RMSE_computation/rmse_function_test.sh` runs the `RMSE_computation/rmse_fun
 ### Modifying the Model Architecture
 To apply the same architecture for the prediction of other biogeochemical variables, it could be useful to modify the model architecture, for example, adding or removing some convolutional layers. The default architectures are located in:
 * `MuSt3Net/convolutional_network.py`.
+
+
+### Dataset
+The dimension of the training dataset exceeds the available memory space of github. A portion of the dataset is available in Zenodo (); for the whole training dataset, ask the codeowner and it will be sent. 
