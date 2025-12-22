@@ -72,4 +72,9 @@ To apply the same architecture for the prediction of other biogeochemical variab
 
 
 ### Dataset
-The dimension of the training dataset exceeds the available memory space of github. A portion of the dataset is available in Zenodo (); for the whole training dataset, ask the codeowner and it will be sent. 
+The dimension of the training dataset exceeds the available memory space of github. A portion of the dataset is available in Zenodo (https://zenodo.org/records/17580239); for the whole training dataset, ask the codeowner and it will be sent. 
+
+
+### Baseline 
+We acknowledge this study does not include any direct comparison with DA methods, as a meaningful comparison would necessitate new experiments performed under strictly controlled and comparable conditions, such as the same dataset. This remains an important direction for future developments.
+
