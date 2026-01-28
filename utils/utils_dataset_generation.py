@@ -9,6 +9,16 @@ from utils.utils_general import *
 from utils.utils_mask import *
 
 
+def ensure_dir(path):
+    os.makedirs(path, exist_ok=True)
+
+def write_phase2_indexes(base_path, ywd, train, test_int, test_ext):
+    write_list(ywd, os.path.join(base_path, "ywd_indexes.txt"))
+    write_list(train, os.path.join(base_path, "index_training.txt"))
+    write_list(test_int, os.path.join(base_path, "index_internal_testing.txt"))
+    write_list(test_ext, os.path.join(base_path, "index_external_testing.txt"))
+
+
 
 def generate_land_sea_masks(path_saving, biogeoch_var, year):
     """this function generates and saves the land_sea_masks"""
