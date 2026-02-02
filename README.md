@@ -23,13 +23,17 @@ To train the MuSt3Net model, it is sufficient to run the 2_step_train_ensemble.p
 sbatch ./2_step_train_ensemble.sh 
 ```
 
-The .sh script run the .py script, which is organized as follows: 
-* it downloads the data from the dataset_training directory and it uses the function training_1p (`--MuSt3Net/training_testing_function.training_1p`) to emulate the BFM model 
-* it uses the function testing_1p (`--MuSt3Net/training_testing_function.testing_1p`) to test the quality of the BFM emulation on the test dataset
-* it downloads the data from the dataset_training directory and the model_1p results and it uses the function training_2p (`--MuSt3Net/training_testing_function.training_2p`) to integrate Argo-floats
-*  it uses the function testing_2p_ensemble (`--MuSt3Net/training_testing_function.testing_2p_ensemble`) to test the quality of the integration on the test dataset
+A demonstration of the behavior of the proposed code is contained in Must3Net_demo.ipynb
 
-To manage the runtime, which could exceed 24 hours, the code flow is ruled by 3 binary parameters
+Both the 2_step_train_ensemble.py script and the demo Must3Net_demo.ipynb are organized as follows: 
+* they download the data from the dataset_training directory and they use the function training_1p (`--MuSt3Net/training_testing_function.training_1p`) to emulate the BFM model 
+* they use the function testing_1p (`--MuSt3Net/training_testing_function.testing_1p`) to test the quality of the BFM emulation on the test dataset
+* they download the data from the dataset_training directory and the model_1p results and they use the function training_2p (`--MuSt3Net/training_testing_function.training_2p`) to integrate Argo-floats
+* they use the function testing_2p_ensemble (`--MuSt3Net/training_testing_function.testing_2p_ensemble`) to test the quality of the integration on the test dataset
+* they present vertical profiles and spatial maps of reconstructed chlorophyll and compares them with outputs from the BFM model and measurements from BGC-Argo floats.
+
+
+To manage the runtime, which could exceed 24 hours, the code flow is ruled by 3 binary parameters:
 *  `--first_run_id` is the parameter which identifies the first run of the job; it is useful to correctly download data.
 *  `--end_train_1p` is the parameter which identifies if the 1<sup>st</sup> training step is ended or not.
 *  `--end_1p` is the parameter which identifies if the 1<sup>st</sup> step (training and testing) is ended or not. if is true, the code passes to execute the 2<sup>nd</sup> step. 
@@ -72,7 +76,7 @@ To apply the same architecture for the prediction of other biogeochemical variab
 
 
 ### Dataset
-The dimension of the training dataset exceeds the available memory space of github. A portion of the dataset is available in Zenodo (https://zenodo.org/records/17580239); for the whole training dataset, ask the codeowner and it will be sent. 
+The dimension of the training dataset exceeds the available memory space of github. A portion of the dataset is available in Zenodo (https://zenodo.org/records/18454986); for the whole training dataset, ask the codeowner and it will be sent. 
 
 
 ### Baseline 
